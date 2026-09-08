@@ -15,6 +15,9 @@ Read the project documentation before changing code or public behavior:
 If requested work conflicts with a documented invariant, point out the conflict
 before implementation. Do not silently replace an architectural decision.
 
+- Read [MCP.md](docs/MCP.md) and [PLUGIN.md](docs/PLUGIN.md) when changing MCP,
+  resources, transports, manifests, or bundles.
+
 ## Project invariants
 
 - Keep one Node/TypeScript toolchain and English code, comments, errors, and

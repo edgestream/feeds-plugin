@@ -30,3 +30,15 @@ test("recognizes author URLs and normalizes handles", () => {
     assert.throws(() => platform.resolve(new URL(`https://x.com${path}`)), { code: "INVALID_INPUT" });
   }
 });
+
+test("interprets short internal references without provider identity", () => {
+  const platform = new XPlatform();
+  assert.deepEqual(platform.parseReference("123456"), { kind: "post", platform: "x", id: "123456" });
+  assert.deepEqual(platform.parseReference("MayoOhnePommes"), { kind: "author", platform: "x", handle: "mayoohnepommes" });
+  assert.deepEqual(platform.resolve(new URL("https://x.com/123456")), { kind: "author", platform: "x", handle: "123456" });
+  for (const value of ["", "a/b", "a?b", "a#b", "home", "../alice", "a%2fb", "a".repeat(16)]) {
+    assert.throws(() => platform.parseReference(value), { code: "INVALID_INPUT" }, value);
+  }
+  assert.throws(() => platform.formatReference({ kind: "post", platform: "x", id: "alice" }), { code: "INVALID_INPUT" });
+  assert.throws(() => platform.formatReference({ kind: "author", platform: "other", handle: "alice" }), { code: "INVALID_INPUT" });
+});

@@ -1,4 +1,8 @@
-# First implementation
+# First implementation (historical)
+
+This document records the initial single-post implementation, not current behavior.
+For the current feed model and MCP implementation, see [ARCHITECTURE.md](ARCHITECTURE.md)
+and [MCP.md](MCP.md).
 
 ## Accepted decisions
 
@@ -31,6 +35,6 @@ API. Do not retrieve threads, replies, media files,
 or additional quoted posts. No cache, authentication, retries, provider fallback,
 dynamic package discovery, or npm publication is included.
 
-MCP implementation follows separately. This version prepares a shared service,
+MCP was deferred in this initial milestone and is now implemented; see [MCP.md](MCP.md). This version prepares a shared service,
 runtime configuration, cancellation, and structured errors, but no MCP server or
 plugin manifests. Other platforms and providers remain future implementations.

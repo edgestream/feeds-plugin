@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "feeds": {
+      "command": "node",
+      "args": [
+        "./dist/feeds-mcp.mjs"
+      ]
+    }
+  }
+}
