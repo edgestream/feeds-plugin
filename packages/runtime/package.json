@@ -1,0 +1,14 @@
+{
+  "name": "@edgestream/feeds-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@edgestream/feeds-core": "file:../../packages/core",
+    "@edgestream/feeds-application": "file:../../packages/application",
+    "@edgestream/feeds-platform-x": "file:../../packages/platform-x",
+    "@edgestream/feeds-provider-fxtwitter": "file:../../packages/provider-fxtwitter"
+  }
+}
