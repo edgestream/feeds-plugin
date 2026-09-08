@@ -1,19 +1,30 @@
 # Feeds Plugin
-Read social media feeds
+
+Read social media feeds.
 
 ## CLI
 
-Read one public X post:
+Read an X post, its context or answers:
 
 ```bash
 npx feeds show 'https://x.com/OpenAI/status/2082577277246972300'
+npx feeds show --context 'https://x.com/OpenAI/status/2082577277246972300'
+npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
 ```
-## Development
 
-Install dependencies, type-check the workspace, and run the test suite:
+Read an authors feed:
 
 ```bash
+npx feeds show 'https://x.com/OpenAI'
+```
+
+## Development
+
+```bash
+npm ci
 npm run build
 npm run check
 npm test
 ```
+
+See [AGENTS.md](AGENTS.md) for repository guidance and architecture references.

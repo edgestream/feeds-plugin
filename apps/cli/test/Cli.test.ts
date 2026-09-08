@@ -5,7 +5,7 @@ import { runCli } from "../src/index.js";
 
 test("prints the full JSON response and no diagnostics on success", async () => {
   let stdout = "", stderr = "";
-  const payload = { nested: { text: "Hello 🌍" }, unknown: [1, null, true] };
+  const payload = { posts: [] };
   const code = await runCli(["show", "https://x.com/a/status/123"], () => ({ show: async input => {
     assert.equal(input, "https://x.com/a/status/123"); return payload;
   } }), { stdout: text => { stdout += text; }, stderr: text => { stderr += text; } });
@@ -27,5 +27,23 @@ test("prints structured failures only to stderr", async () => {
     let diagnostic = "";
     assert.equal(await runCli(["show", "url"], () => ({ show: async () => { throw new FeedError(code, "failure"); } }), { stdout: () => assert.fail(), stderr: text => { diagnostic = text; } }), exit);
     assert.equal(diagnostic, `${code}: failure\n`);
+  }
+});
+
+test("parses scope before or after the URL and forwards pagination and cancellation", async () => {
+  const signal = new AbortController().signal;
+  for (const args of [
+    ["show", "--context", "--answers", "url", "--all", "--cursor", "next"],
+    ["show", "url", "--answers", "--context", "--cursor", "next", "--all"],
+  ]) {
+    assert.equal(await runCli(args, () => ({ show: async (input, options, context) => {
+      assert.equal(input, "url");
+      assert.deepEqual(options, { scope: { ancestors: true, replies: true }, all: true, cursor: "next" });
+      assert.equal(context?.signal, signal);
+      return { posts: [] };
+    } }), { stdout: () => {}, stderr: () => assert.fail() }, { signal }), 0);
+  }
+  for (const args of [["show", "url", "--limit", "1.5"], ["show", "url", "--cursor"], ["show", "url", "--answers", "--answers"], ["show", "url", "--unknown"]]) {
+    assert.equal(await runCli(args, () => assert.fail(), { stdout: () => assert.fail(), stderr: () => {} }), 2);
   }
 });

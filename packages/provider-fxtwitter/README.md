@@ -1,33 +1,58 @@
 # FxTwitter provider
 
-Implements `PostProvider` for platform `x`, using provider ID `fxtwitter`.
-This is a third-party API, not the official X Developer API.
+Implements `FeedProvider` for platform `x`, provider ID `fxtwitter`. This is a
+third-party API, not the official X Developer API.
 
-## Request contract
+## Requests and mapping
 
-Each read performs one GET to `https://api.fxtwitter.com/2/status/{numeric-id}`
-with `Accept: application/json` and a read-only Feeds User-Agent. The fixed HTTPS
-endpoint is built exclusively from a validated numeric ID. Redirects are rejected.
-Input URLs and URLs inside responses are never fetched directly.
+All GET requests use fixed `https://api.fxtwitter.com/2/` endpoints:
 
-The default timeout is 20 seconds, covering headers and body. The maximum response
-body is 5 MiB; declared size and bytes received from the stream are checked.
-An injected fetch client and configurable constructor limits support testing.
-Caller cancellation aborts the HTTP request and reports `CANCELLED`.
+| Subject/scope | Endpoint |
+| --- | --- |
+| Post | `status/{id}` |
+| Post with ancestors | `thread/{id}` |
+| Post with replies, optionally ancestors | `conversation/{id}` |
+| Author | `profile/{handle}/statuses` |
 
-HTTP 404 maps to `NOT_FOUND`, 429 to `RATE_LIMITED`, other unsuccessful statuses
-and network failures to `UPSTREAM`. Invalid JSON, non-object payloads, invalid UTF-8,
-and oversized responses map to `INVALID_RESPONSE`. Timeout maps to `TIMEOUT`.
+A query uses one endpoint, including combined context/answers. Author pages set
+`count` (default 25); author/conversation pages pass `cursor` through URLSearchParams.
+Conversation ordering uses the upstream default. Post limits and author scope flags
+are rejected. Cursor is supported only for author/conversation requests.
 
-Successful HTTP responses must contain a JSON object. That complete object is
-returned untouched at the JSON-value boundary, including unknown fields or any
-application-level error fields. V1 deliberately does not interpret an undocumented
-provider-specific success/error schema or validate individual post fields.
+V2 `status`, `thread`, `replies`, and `results` become flat posts; grouped timeline
+`statuses` are flattened. `id` identifies each post and `replying_to.status`
+identifies its parent. Unknown post fields remain in `data`; quote/media/source
+URLs are never fetched. Available ancestors are selected by parent references;
+replies are restricted to the focal post's descendants. Reply-page entries with
+missing parents are retained because preceding pages may contain those parents.
+This cannot independently verify their entire ancestry. Duplicates are merged by
+ID. Identifiable tombstones remain as data; focal tombstones can use the requested
+ID. Unidentifiable entries are invalid responses.
 
-## Limits and deferred work
+The mapping follows the [upstream OpenAPI specification](https://github.com/FxEmbed/FxEmbed/blob/main/docs/specs/fxtwitter-openapi.json).
+Pagination uses `cursor.bottom`. No extra request is needed to combine scopes.
+An empty `results` response yields zero posts, including the upstream 404 empty
+ timeline response (which cannot distinguish an empty timeline from an unknown
+user). No local date, author, reply, or repost filtering is applied to timelines.
 
-No thread, conversation, reply, linked-post, or media download requests are made.
-There is no authentication, caching, retry, or alternate-provider fallback.
-Endpoint availability and payload shape are controlled by fxTwitter. Automated
-verification uses injected responses and does not establish live API availability.
-Review upstream terms and rate limits before broader distribution.
+## Transport and errors
+
+Requests set `Accept: application/json` and a read-only Feeds User-Agent. Endpoints
+are built from validated numeric IDs or handles. Redirects are rejected. Timeout
+is 20 seconds per request, covering headers and body; response size is limited to
+5 MiB, checking declared and streamed bytes. Fetch and limits are injectable.
+Caller cancellation aborts HTTP and reports `CANCELLED`.
+
+HTTP 404 maps to `NOT_FOUND` except validated empty author pages; 429 maps to
+`RATE_LIMITED`; other unsuccessful statuses/network failures map to `UPSTREAM`.
+Application-level error codes are also checked. Invalid JSON, UTF-8, feed structure,
+IDs, parent references, cursors, and oversized bodies map to `INVALID_RESPONSE`.
+Timeout maps to `TIMEOUT`. Missing focal posts map to `NOT_FOUND`.
+
+## Limits
+
+Availability, context depth, reply coverage, and cursor behavior are controlled by
+fxTwitter. No completeness guarantee is made, including after cursor exhaustion.
+There is no authentication, caching, retry, fallback, or media downloading.
+Automated verification uses injected responses and does not establish live API
+availability. See the architecture document for all-page traversal bounds.
