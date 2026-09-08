@@ -1,0 +1,31 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "packages/*/test/**/*.ts",
+    "apps/*/test/**/*.ts",
+    "test/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/application"
+    },
+    {
+      "path": "./packages/platform-x"
+    },
+    {
+      "path": "./packages/provider-fxtwitter"
+    },
+    {
+      "path": "./packages/runtime"
+    },
+    {
+      "path": "./apps/cli"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "feeds-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "bin": {
+    "feeds": "./dist/feeds-cli.mjs"
+  },
+  "scripts": {
+    "build": "tsc -b && npm run bundle:cli",
+    "bundle:cli": "esbuild apps/cli/src/main.ts --bundle --platform=node --target=node24 --format=esm --minify-whitespace --outfile=dist/feeds-cli.mjs",
+    "check": "tsc -b --pretty false",
+    "test": "tsx --test packages/*/test/*.test.ts apps/*/test/*.test.ts",
+    "feeds": "node dist/feeds-cli.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@edgestream/feeds-core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@edgestream/feeds-application": [
+        "./packages/application/src/index.ts"
+      ],
+      "@edgestream/feeds-platform-x": [
+        "./packages/platform-x/src/index.ts"
+      ],
+      "@edgestream/feeds-provider-fxtwitter": [
+        "./packages/provider-fxtwitter/src/index.ts"
+      ],
+      "@edgestream/feeds-runtime": [
+        "./packages/runtime/src/index.ts"
+      ],
+      "@edgestream/feeds-cli": [
+        "./apps/cli/src/index.ts"
+      ]
+    },
+    "target": "ES2024",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": [
+      "node"
+    ],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "skipLibCheck": true
+  }
+}

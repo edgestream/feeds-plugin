@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/application"
+    },
+    {
+      "path": "../../packages/platform-x"
+    },
+    {
+      "path": "../../packages/provider-fxtwitter"
+    }
+  ],
+  "include": [
+    "src/**/*.ts"
+  ]
+}

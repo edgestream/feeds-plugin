@@ -217,7 +217,7 @@ Use the repository issue-dependency API directly, following the official
 2. Read the new issue's current blockers before writing:
 
    ```bash
-   gh api repos/edgestream/recipes-plugin/issues/<blocked-number>/dependencies/blocked_by
+   gh api repos/edgestream/feeds-plugin/issues/<blocked-number>/dependencies/blocked_by
    ```
 
 3. Reject a self-dependency or reversed relationship. Walk the prospective
@@ -230,12 +230,12 @@ Use the repository issue-dependency API directly, following the official
 
    ```bash
    blocking_id="$(gh api \
-     repos/edgestream/recipes-plugin/issues/<blocking-number> \
+     repos/edgestream/feeds-plugin/issues/<blocking-number> \
      --jq '.id')"
 
    jq -n --argjson issue_id "$blocking_id" '{issue_id: $issue_id}' | \
      gh api --method POST \
-       repos/edgestream/recipes-plugin/issues/<blocked-number>/dependencies/blocked_by \
+       repos/edgestream/feeds-plugin/issues/<blocked-number>/dependencies/blocked_by \
        --input -
    ```
 
@@ -244,33 +244,14 @@ Use the repository issue-dependency API directly, following the official
 6. Read back both directions and compare them with the intended topology:
 
    ```bash
-   gh api repos/edgestream/recipes-plugin/issues/<blocked-number>/dependencies/blocked_by
-   gh api repos/edgestream/recipes-plugin/issues/<blocking-number>/dependencies/blocking
+   gh api repos/edgestream/feeds-plugin/issues/<blocked-number>/dependencies/blocked_by
+   gh api repos/edgestream/feeds-plugin/issues/<blocking-number>/dependencies/blocking
    ```
 
 This procedure is additive: reruns skip relationships that already exist and
 never remove unrelated dependencies. If credentials cannot write dependencies,
 report the authorization blocker and do not claim that the relationship was
 created.
-
-### Current backlog example
-
-The following verified topology demonstrates the distinction between topical
-labels and native dependencies:
-
-| Issue | Native Type | Topical labels | Strictly blocked by |
-| --- | --- | --- | --- |
-| #14 | Feature | `mcp`, `ui` | None |
-| #15 | Feature | `mcp`, `search`, `ui` | #14 |
-| #16 | Feature | `mcp`, `ui` | #14 |
-| #17 | Feature | `mcp`, `transport` | None |
-| #18 | Task | `chatgpt`, `documentation`, `mcp` | #17 |
-| #19 | Task | `documentation`, `mcp` | #18 |
-| #20 | Task | `documentation` | None |
-
-The possible #15-to-#16 integration is optional, so neither issue blocks the
-other. Completing #20 early is preferred ordering only and is not a strict
-blocker for #14–#19.
 
 ## Pull request titles
 
@@ -328,12 +309,12 @@ them.
 6. Set the native issue type with:
 
    ```bash
-   gh api --method PATCH repos/edgestream/recipes-plugin/issues/<number> \
+   gh api --method PATCH repos/edgestream/feeds-plugin/issues/<number> \
      -f type=<Bug|Feature|Task>
    ```
 
 7. Add Priority and Effort without clearing any unrelated existing fields with
-   `POST repos/edgestream/recipes-plugin/issues/<number>/issue-field-values`.
+   `POST repos/edgestream/feeds-plugin/issues/<number>/issue-field-values`.
    Send a JSON object containing an `issue_field_values` array. Each element
    requires a numeric `field_id` and a `value` matching the field option name.
    CLI form arguments serialize field IDs as strings, so use a JSON request body
@@ -346,8 +327,8 @@ them.
     sorted label set with the intended values:
 
     ```bash
-    gh api repos/edgestream/recipes-plugin/issues/<number>/issue-field-values
-    gh api repos/edgestream/recipes-plugin/issues/<number>
+    gh api repos/edgestream/feeds-plugin/issues/<number>/issue-field-values
+    gh api repos/edgestream/feeds-plugin/issues/<number>
     gh issue view <number> --json labels \
       --jq '[.labels[].name] | sort'
     ```
