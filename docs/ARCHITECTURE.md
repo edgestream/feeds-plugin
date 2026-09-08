@@ -1,7 +1,7 @@
 # Architecture
 
-Feeds uses Node.js 24, TypeScript, ESM, and npm workspaces, following the Recipes
-project. TypeScript project references check package boundaries. Node's test runner
+Feeds uses Node.js 24, TypeScript, ESM, and npm workspaces.
+TypeScript project references check package boundaries. Node's test runner
 executes TypeScript tests through tsx; esbuild produces the committed CLI bundle.
 
 ## Dependency direction
@@ -14,7 +14,7 @@ apps/cli --> packages/runtime --> packages/application --> packages/core
 
 - `core` defines `PostRef`, `Platform`, `PostProvider`, JSON values, request
   cancellation, and typed errors. It imports no runtime, Node, CLI, or MCP code.
-- `application` depends only on core. `FeedsService.show` resolves a public URL
+- `application` depends only on core. `FeedService.show` resolves a public URL
   through the platform registry and dispatches to its selected provider.
 - `platform-x` owns supported URL shapes and X identity; it performs no HTTP calls
   and knows no provider.
@@ -46,7 +46,7 @@ frontends. Future capabilities such as feeds or search need separate contracts;
 the current provider is only required to retrieve one post.
 
 MCP is not implemented. Its future app will call the same service and runtime,
-pass cancellation through `RequestContext.signal`, and translate `FeedsError`
+pass cancellation through `RequestContext.signal`, and translate `FeedError`
 codes to protocol errors. It must not assume the JSON payload is a normalized post.
 
 ## Verification

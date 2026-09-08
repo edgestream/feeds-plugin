@@ -2,7 +2,7 @@
 
 ## Accepted decisions
 
-Use the Recipes repository's Node.js 24, TypeScript, ESM, npm workspace,
+Use the Node.js 24, TypeScript, ESM, npm workspace,
 project-reference, Node test runner, and esbuild toolchain. Keep the CLI bundle
 committed and expose `feeds` locally through the root package's `bin` mapping.
 
@@ -26,21 +26,11 @@ post model. Pretty printing preserves JSON values, not original response bytes.
 
 ## Scope
 
-Accept public X/Twitter post URLs. Fetch only `/2/status/{id}` using the technique
-in `edgestream/fxtwitter-plugin`. Do not retrieve threads, replies, media files,
+Accept public X/Twitter post URLs. Fetch only `/2/status/{id}` from the fxTwitter
+API. Do not retrieve threads, replies, media files,
 or additional quoted posts. No cache, authentication, retries, provider fallback,
 dynamic package discovery, or npm publication is included.
 
 MCP implementation follows separately. This version prepares a shared service,
 runtime configuration, cancellation, and structured errors, but no MCP server or
 plugin manifests. Other platforms and providers remain future implementations.
-
-## References
-
-- [Recipes architecture](https://github.com/edgestream/recipes-plugin/blob/main/docs/ARCHITECTURE.md)
-- [Recipes toolchain](https://github.com/edgestream/recipes-plugin/blob/main/package.json)
-- [fxTwitter HTTP helper](https://github.com/edgestream/fxtwitter-plugin/blob/main/skills/fxtwitter/scripts/common.py)
-- [fxTwitter single-post reader](https://github.com/edgestream/fxtwitter-plugin/blob/main/skills/fxtwitter/scripts/read_post.py)
-
-The requested ChatGPT project was not available through project discovery; the
-GitHub repositories and the user's explicit decisions are the reference sources.

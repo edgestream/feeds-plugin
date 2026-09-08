@@ -15,7 +15,7 @@ runtime, or another provider. Providers may later be packaged separately.
 - Accept cancellation through `RequestContext.signal`.
 - Inject HTTP collaborators for deterministic tests.
 - Bound request duration and response size, validate the JSON object boundary,
-  and report operational failures through `FeedsError`.
+  and report operational failures through `FeedError`.
 - Do not silently retry, fall back, fetch linked URLs, or discover providers.
 
 `Platform` packages own public URL recognition and normalization. Provider packages

@@ -1,8 +1,6 @@
-# fxTwitter provider
+# FxTwitter provider
 
 Implements `PostProvider` for platform `x`, using provider ID `fxtwitter`.
-The API technique comes from
-[fxtwitter-plugin](https://github.com/edgestream/fxtwitter-plugin/blob/main/skills/fxtwitter/scripts/common.py).
 This is a third-party API, not the official X Developer API.
 
 ## Request contract

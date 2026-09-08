@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { FeedsError } from "@edgestream/feeds-core";
+import { FeedError } from "@edgestream/feeds-core";
 import { runCli } from "../src/index.js";
 
 test("prints the full JSON response and no diagnostics on success", async () => {
@@ -25,7 +25,7 @@ test("invalid commands never construct the runtime", async () => {
 test("prints structured failures only to stderr", async () => {
   for (const [code, exit] of [["NOT_FOUND", 1], ["CANCELLED", 130], ["INVALID_INPUT", 2]] as const) {
     let diagnostic = "";
-    assert.equal(await runCli(["show", "url"], () => ({ show: async () => { throw new FeedsError(code, "failure"); } }), { stdout: () => assert.fail(), stderr: text => { diagnostic = text; } }), exit);
+    assert.equal(await runCli(["show", "url"], () => ({ show: async () => { throw new FeedError(code, "failure"); } }), { stdout: () => assert.fail(), stderr: text => { diagnostic = text; } }), exit);
     assert.equal(diagnostic, `${code}: failure\n`);
   }
 });

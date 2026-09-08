@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { FeedsError, type JsonObject, type PostProvider } from "@edgestream/feeds-core";
+import { FeedError, type JsonObject, type PostProvider } from "@edgestream/feeds-core";
 
 export function postProviderContract(create: () => PostProvider, expected: JsonObject): void {
   test("provider contract: returns the complete response for a stable reference", async () => {
@@ -14,6 +14,6 @@ export function postProviderContract(create: () => PostProvider, expected: JsonO
   });
   test("provider contract: supports cancellation", async () => {
     await assert.rejects(create().get({ platform: "x", id: "123" }, { signal: AbortSignal.abort() }),
-      error => error instanceof FeedsError && error.code === "CANCELLED");
+      error => error instanceof FeedError && error.code === "CANCELLED");
   });
 }

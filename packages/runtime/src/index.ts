@@ -1,5 +1,5 @@
-import { FeedsError, type PostProvider } from "@edgestream/feeds-core";
-import { FeedsService } from "@edgestream/feeds-application";
+import { FeedError, type PostProvider } from "@edgestream/feeds-core";
+import { FeedService } from "@edgestream/feeds-application";
 import { XPlatform } from "@edgestream/feeds-platform-x";
 import { FxTwitterProvider, type FxTwitterOptions } from "@edgestream/feeds-provider-fxtwitter";
 
@@ -9,11 +9,11 @@ export function readConfiguration(env: Readonly<Record<string, string | undefine
   return { xProvider: env.FEEDS_X_PROVIDER ?? "fxtwitter" };
 }
 
-export function createFeeds(configuration: Configuration = readConfiguration(), options: FxTwitterOptions = {}): FeedsService {
+export function createFeed(configuration: Configuration = readConfiguration(), options: FxTwitterOptions = {}): FeedService {
   const providers = new Map<string, () => PostProvider>([
     ["fxtwitter", () => new FxTwitterProvider(options)],
   ]);
   const createProvider = providers.get(configuration.xProvider);
-  if (!createProvider) throw new FeedsError("CONFIGURATION", `Unknown X provider: ${configuration.xProvider}.`);
-  return new FeedsService([new XPlatform()], [createProvider()]);
+  if (!createProvider) throw new FeedError("CONFIGURATION", `Unknown X provider: ${configuration.xProvider}.`);
+  return new FeedService([new XPlatform()], [createProvider()]);
 }
