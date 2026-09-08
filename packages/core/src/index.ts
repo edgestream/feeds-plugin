@@ -1,19 +1,40 @@
 export interface Platform {
   readonly id: string;
-  /** Return undefined for URLs not owned by this platform; reject malformed post URLs. */
-  resolve(url: URL): PostRef | undefined;
-}
-
-export interface PostProvider {
-  readonly id: string;
-  readonly platform: string;
-  /** Return the complete upstream JSON object, without a normalized post schema. */
-  get(ref: PostRef, context?: RequestContext): Promise<JsonObject>;
+  resolve(url: URL): FeedSubject | undefined;
 }
 
 export interface PostRef {
+  readonly kind: "post";
   readonly platform: string;
   readonly id: string;
+}
+export interface AuthorRef {
+  readonly kind: "author";
+  readonly platform: string;
+  readonly handle: string;
+}
+export type FeedSubject = PostRef | AuthorRef;
+export interface FeedOptions {
+  readonly scope?: { readonly ancestors?: boolean; readonly replies?: boolean };
+  readonly cursor?: string;
+  readonly limit?: number;
+}
+export interface FeedQuery extends FeedOptions { readonly subject: FeedSubject }
+export interface FeedPost {
+  readonly ref: PostRef;
+  /** Reply relationship; the parent need not occur on this page. */
+  readonly parent?: PostRef;
+  readonly data: JsonObject;
+}
+export interface FeedPage {
+  readonly posts: readonly FeedPost[];
+  /** Provider-owned continuation; absence does not prove upstream completeness. */
+  readonly nextCursor?: string;
+}
+export interface FeedProvider {
+  readonly id: string;
+  readonly platform: string;
+  get(query: FeedQuery, context?: RequestContext): Promise<FeedPage>;
 }
 
 export interface RequestContext { readonly signal?: AbortSignal }
