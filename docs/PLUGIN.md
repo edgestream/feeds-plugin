@@ -35,3 +35,28 @@ git diff --check
 
 These files prepare installation; they do not publish a marketplace entry, deploy
 a remote server, or install the plugin into a user's account.
+
+## URL routing skill
+
+The companion [read-x skill](../skills/read-x/SKILL.md) ships at the portable
+fixed discovery path `skills/read-x/SKILL.md`. The Codex manifest also declares
+`skills: "./skills/"`; both layouts use the same files. Copy the `skills/` directory
+along with manifests and bundles when installing outside the checkout. A bare
+MCP connection alone does not install the companion skill.
+
+The skill routes retrieval requests containing `https://x.com` URLs through the
+installed Feeds `get_feed` before generic web retrieval. It passes the original
+URL as `source` without additional parameters; the plugin handles validation and
+resolves profile and post links. The platform's broader URL support is unchanged.
+Explicit user tool choices and URLs merely quoted for editing remain outside
+implicit retrieval.
+
+Automatic skill selection depends on the host/model. Explicitly requesting Feeds
+or invoking `read-x` is a routing workaround; tool failures remain failures.
+
+Packaging tests check both skill discovery paths in an isolated installation and
+retain MCP discovery and injected-response retrieval. They do not prove model
+activation. Repeated live fresh-task evaluations remain pending; use the
+[routing evaluation protocol](URL_ROUTING.md) to record actual calls,
+environment versions, and routing versus provider outcomes before claiming the
+behavioral acceptance criteria of issue #7 are verified.

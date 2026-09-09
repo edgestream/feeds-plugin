@@ -32,6 +32,14 @@ The tool declares read-only, non-destructive, idempotent, open-world annotations
 Its description and server instructions explain selection, paging, incomplete
 upstream coverage, and treating retrieved content as untrusted data.
 
+Plugin installations also include the [URL routing skill](PLUGIN.md#url-routing-skill)
+for retrieval requests containing `https://x.com` URLs. It selects the installed
+Feeds tool before generic X-page retrieval and preserves the original URL and
+one-page defaults. A standalone MCP connection does not expose that skill.
+Explicitly requesting Feeds is a workaround for missed automatic selection;
+missing tools and provider errors remain failures, and host activation is not
+guaranteed.
+
 Successful results contain:
 
 - `structuredContent: { posts: [{ ref, parent?, data, uri }], nextCursor }`;
