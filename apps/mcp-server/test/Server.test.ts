@@ -48,10 +48,11 @@ test("rejects unsafe inputs before provider access and maps resource errors", as
   let calls = 0;
   const fixture = await connect(async () => { calls++; throw new FeedError("NOT_FOUND", "Post not found."); });
   try {
-    for (const source of ["feeds://other/123", "feeds://x/a/b", "feeds://x/%2F", "feeds://x/a?b", "https://evil.test/123"]) {
+    for (const source of ["feeds://other/123", "feeds://x/a/b", "feeds://x/%2F", "feeds://x/a?b", "https://evil.test/123", "https://", "x.com/OpenAI", "https:OpenAI", "@OpenAI", "OpenAI?x", "OpenAI#x", "OpenAI%20", " OpenAI", "a-b", "abcdefghijklmnop", "home", "feeds://x/home"]) {
       const result = await fixture.client.callTool({ name: "get_feed", arguments: { source } });
       assert.equal(result.isError, true, source);
       assert.match(JSON.stringify(result.content), /INVALID_INPUT/);
+      assert.match(JSON.stringify(result.content), /https:\/\/x.com\/OpenAI/);
     }
     assert.equal(calls, 0);
     const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "feeds://x/123" } });
@@ -80,15 +81,58 @@ test("paginates, deduplicates, detects loops and enforces result budget", async 
   } finally { await fixture.close(); }
 });
 
-test("deadline aborts provider work and exposes TIMEOUT", async () => {
+test("total traversal deadline exposes TIMEOUT and individual pages can resume", async () => {
   let aborted = false;
-  const fixture = await connect(async (_query, context) => {
+  const fixture = await connect(async (query, context) => {
+    if (!query.cursor) return { posts: [post], nextCursor: "next" };
+    if (aborted) return { posts: [] };
     await new Promise<void>(resolve => context!.signal!.addEventListener("abort", () => { aborted = true; resolve(); }, { once: true }));
     throw new FeedError("CANCELLED", "Cancelled.");
   }, { timeoutMs: 25 });
   try {
-    const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "feeds://x/123" } });
+    const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "OpenAI", all: true } });
     assert.equal(aborted, true);
     assert.match(JSON.stringify(result.content), /TIMEOUT/);
+    assert.match(JSON.stringify(result.content), /without all/);
+    assert.match(JSON.stringify(result.content), /nextCursor as cursor/);
+    assert.equal(result.structuredContent, undefined);
+    const first = await fixture.client.callTool({ name: "get_feed", arguments: { source: "OpenAI" } });
+    assert.deepEqual(first.structuredContent, { posts: [{ ...post, uri: "feeds://x/123456" }], nextCursor: "next" });
+    const next = await fixture.client.callTool({ name: "get_feed", arguments: { source: "OpenAI", cursor: "next" } });
+    assert.deepEqual(next.structuredContent, { posts: [], nextCursor: null });
+  } finally { await fixture.close(); }
+});
+
+
+test("bare X references preserve response shapes and default to one page with continuation", async () => {
+  const queries: FeedQuery[] = [];
+  const fixture = await connect(async query => { queries.push(query); return { posts: [post], nextCursor: "next" }; });
+  try {
+    for (const [source, subject] of [
+      ["OpenAI", { kind: "author", platform: "x", handle: "openai" }],
+      ["author_name", { kind: "author", platform: "x", handle: "author_name" }],
+      ["_", { kind: "author", platform: "x", handle: "_" }],
+      ["00123456", { kind: "post", platform: "x", id: "00123456" }],
+    ] as const) {
+      const count = queries.length;
+      const result = await fixture.client.callTool({ name: "get_feed", arguments: { source } });
+      assert.equal(queries.length, count + 1);
+      assert.deepEqual(queries.at(-1)?.subject, subject);
+      const expected = { posts: [{ ...post, uri: "feeds://x/123456" }], nextCursor: "next" };
+      assert.deepEqual(result.structuredContent, expected);
+      assert.deepEqual(result.content, [
+        { type: "text", text: JSON.stringify(expected) },
+        { type: "resource_link", uri: "feeds://x/123456", name: "x/123456", mimeType: "application/json" },
+      ]);
+    }
+    await fixture.client.callTool({ name: "get_feed", arguments: { source: "OpenAI", cursor: "next" } });
+    assert.equal(queries.at(-1)?.cursor, "next");
+    const tool = (await fixture.client.listTools()).tools[0]!;
+    assert.match(tool.description!, /one page.*unspecified/);
+    assert.match(tool.description!, /explicitly requested full traversal/);
+    assert.match(tool.description!, /60-second total budget/);
+    const metadata = JSON.stringify(tool.inputSchema);
+    assert.match(metadata, /not an aggregate cap/);
+    assert.match(metadata, /Does not guarantee completeness/);
   } finally { await fixture.close(); }
 });

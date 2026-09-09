@@ -18,13 +18,27 @@ export class FeedService {
 
   async show(input: string, options: FeedOptions & { readonly all?: boolean; readonly maxBytes?: number } = {}, context: RequestContext = {}): Promise<FeedPage> {
     if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.");
+    return this.get(this.resolveUrl(input), options, context);
+  }
+
+  /** Resolve MCP sources; bare references require exactly one configured platform. */
+  resolveSource(input: string): FeedSubject {
+    if (input.startsWith("feeds:")) return this.resolveUri(input);
+    // URL syntax must never fall through to platform reference parsing.
+    if (input && !/[\s:/\\?#@%.]/u.test(input) && this.platforms.length === 1) {
+      return this.platforms[0]!.parseReference(input);
+    }
+    return this.resolveUrl(input);
+  }
+
+  private resolveUrl(input: string): FeedSubject {
     let url: URL;
     try { url = new URL(input); }
     catch { throw new FeedError("INVALID_INPUT", "Expected a complete public post or profile URL."); }
     for (const platform of this.platforms) {
       const ref = platform.resolve(url);
       if (!ref) continue;
-      return this.get(ref, options, context);
+      return ref;
     }
     throw new FeedError("INVALID_INPUT", "The URL does not belong to a supported platform.");
   }

@@ -42,7 +42,9 @@ and `mobile.twitter.com`. Post paths are `/<handle>/status/<numeric-id>` or
 optional trailing slash. Handles contain 1–15 ASCII letters, digits, or underscores;
 known navigation paths such as `/home` and `/search` are rejected. Query strings
 and fragments are ignored. Credentials, nonstandard ports, other hosts, bare IDs,
-bare handles, and internal Feeds URIs are rejected.
+bare handles, and internal Feeds URIs are rejected by the CLI. The
+[MCP interface](MCP.md) additionally accepts internal URIs and bare references
+when exactly one platform is configured.
 
 The CLI prints `FeedPage { posts, nextCursor? }` as JSON, indented with two spaces
 and a trailing newline. Each post has `ref`, optional reply `parent`, and unchanged

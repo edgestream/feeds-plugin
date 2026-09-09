@@ -51,3 +51,21 @@ test("all-pages traversal detects cursor loops, bounds requests and supports can
   } }]);
   await assert.rejects(service.show("https://x.com/alice", { all: true }, { signal: controller.signal }), { code: "CANCELLED" });
 });
+
+
+test("source fallback delegates semantics only to a sole platform and never retries URLs", () => {
+  const references: string[] = [];
+  const subject = { kind: "author" as const, platform: "example", handle: "custom" };
+  const platform = { id: "example", parseReference: (value: string) => { references.push(value); return subject; }, formatReference: () => "custom", resolve: () => undefined };
+  const service = new FeedService([platform], []);
+  assert.deepEqual(service.resolveSource("custom"), subject);
+  assert.deepEqual(references, ["custom"]);
+  for (const source of ["https://", "https://unknown.test/custom", "custom/path", "custom?x", "custom#x", "custom.test", "custom%20", " custom"]) {
+    assert.throws(() => service.resolveSource(source), { code: "INVALID_INPUT" });
+  }
+  assert.deepEqual(references, ["custom"]);
+  for (const platforms of [[], [platform, { ...platform, id: "other" }]]) {
+    assert.throws(() => new FeedService(platforms, []).resolveSource("custom"), { code: "INVALID_INPUT" });
+  }
+  assert.deepEqual(service.resolveSource("feeds://example/custom"), subject);
+});
