@@ -53,8 +53,12 @@ skill's routing scope; their existing MCP/platform contracts are unchanged.
 
 ## Recorded status
 
-Implementation-session inspection on 2026-09-09 found no callable Feeds tool in
-the available tool catalog. Controlled fresh-task host/model evaluations have
-not been run; no live routing or provider success rate is claimed. The automated
-isolated-install checks verify file discovery for both layouts and MCP calls
-against injected upstream responses, not implicit skill activation.
+On 2026-09-09, the maintainer reported completing all manual tests in this
+document successfully. Retrieval requests produced actual successful MCP calls
+returning tweets or profiles, confirming routing and live retrieval in the tested
+environment.
+
+This is a maintainer-reported result; per-run traces, environment versions, and
+repeat counts are not recorded here. It does not guarantee activation across
+other hosts or models. Automated isolated-install checks separately verify file
+discovery for both layouts and MCP calls against injected upstream responses.

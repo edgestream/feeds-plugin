@@ -2,6 +2,19 @@
 
 Read social media feeds.
 
+## MCP
+
+For the quickest setup, install **Feeds Dev** from our marketplace in the
+ChatGPT desktop app. Codex users can run:
+
+```bash
+codex plugin marketplace add edgestream/agent-marketplace --ref development
+codex plugin add feeds-dev@edgestream-dev
+```
+
+Node.js 24 or later is required. See [MCP.md](docs/MCP.md#get-started) for
+full setup and a local checkout MCP alternative.
+
 ## CLI
 
 Read an X post, its context or answers:
@@ -17,24 +30,6 @@ Read an author's feed:
 ```bash
 npx feeds show 'https://x.com/OpenAI'
 ```
-
-## MCP
-
-Use `get_feed` to read posts, context, replies or author feeds from ChatGPT or
-another MCP client. Sources include public URLs, resource URIs such as
-`feeds://x/OpenAI`, and bare X handles (`OpenAI`) or post IDs (`123456`) when only
-X is configured. Start with one page; use `all` only for explicitly requested full
-traversal and continue individual pages using `nextCursor`.
-
-```bash
-node ./dist/feeds-mcp.mjs       # Local stdio plugin
-node ./dist/feeds-mcp-http.mjs  # HTTP at http://127.0.0.1:3000/mcp
-```
-
-Node.js 24 or later is required. See [MCP setup and interface](docs/MCP.md) for
-remote ChatGPT connection and [plugin packaging](docs/PLUGIN.md) for installation
-metadata. Development failures expose detailed upstream diagnostics and stack
-traces to MCP clients; see the [error contract](docs/MCP.md#bounds-cancellation-errors).
 
 ## Development
 

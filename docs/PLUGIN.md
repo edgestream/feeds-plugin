@@ -33,8 +33,13 @@ npm test
 git diff --check
 ```
 
-These files prepare installation; they do not publish a marketplace entry, deploy
-a remote server, or install the plugin into a user's account.
+The plugin is available through the Edgestream Lab marketplace as
+`feeds-dev@edgestream-dev`. The marketplace lives in
+[`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace),
+separate from this package. It supplies installation and discovery; this
+repository still does not deploy a remote server or install the plugin into a
+user's account automatically. See the [MCP quickstart](MCP.md#get-started) for
+the ChatGPT desktop and Codex CLI installation paths.
 
 ## URL routing skill
 
@@ -56,7 +61,7 @@ or invoking `read-x` is a routing workaround; tool failures remain failures.
 
 Packaging tests check both skill discovery paths in an isolated installation and
 retain MCP discovery and injected-response retrieval. They do not prove model
-activation. Repeated live fresh-task evaluations remain pending; use the
-[routing evaluation protocol](URL_ROUTING.md) to record actual calls,
-environment versions, and routing versus provider outcomes before claiming the
-behavioral acceptance criteria of issue #7 are verified.
+activation. The maintainer reported successful completion of the manual routing
+tests, including actual MCP calls returning tweets or profiles. See the
+[routing evaluation protocol and recorded result](URL_ROUTING.md) for the tested
+scope and evidence limitations.
