@@ -1,6 +1,6 @@
 # Feeds Plugin
 
-Read social media feeds.
+Read social media feeds and return the complete upstream JSON response.
 
 ## MCP
 

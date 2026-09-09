@@ -30,20 +30,20 @@ test("prints structured failures only to stderr", async () => {
   }
 });
 
-test("parses scope before or after the URL and forwards pagination and cancellation", async () => {
+test("parses endpoint options before or after the URL and forwards cancellation", async () => {
   const signal = new AbortController().signal;
   for (const args of [
-    ["show", "--context", "--answers", "url", "--all", "--cursor", "next"],
-    ["show", "url", "--answers", "--context", "--cursor", "next", "--all"],
+    ["show", "--context", "--answers", "url"],
+    ["show", "url", "--answers", "--context"],
   ]) {
     assert.equal(await runCli(args, () => ({ show: async (input, options, context) => {
       assert.equal(input, "url");
-      assert.deepEqual(options, { scope: { ancestors: true, replies: true }, all: true, cursor: "next" });
+      assert.deepEqual(options, { context: true, answers: true });
       assert.equal(context?.signal, signal);
       return { posts: [] };
     } }), { stdout: () => {}, stderr: () => assert.fail() }, { signal }), 0);
   }
-  for (const args of [["show", "url", "--limit", "1.5"], ["show", "url", "--cursor"], ["show", "url", "--answers", "--answers"], ["show", "url", "--unknown"]]) {
+  for (const args of [["show", "url", "--all"], ["show", "url", "--limit", "25"], ["show", "url", "--cursor"], ["show", "url", "--answers", "--answers"], ["show", "url", "--unknown"]]) {
     assert.equal(await runCli(args, () => assert.fail(), { stdout: () => assert.fail(), stderr: () => {} }), 2);
   }
 });

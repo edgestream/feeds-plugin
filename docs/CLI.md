@@ -1,7 +1,7 @@
 # CLI
 
 ```text
-npx feeds show [--context] [--answers] [--all] [--cursor CURSOR] [--limit 1-100] <url>
+npx feeds show [--context] [--answers] <url>
 npx feeds --help
 ```
 
@@ -9,7 +9,7 @@ Use inside the repository after `npm ci`. The executable points to committed
 `dist/feeds-cli.mjs`; bare `npx feeds` outside this unpublished checkout does not
 identify this project.
 
-## Subjects and scope
+## URLs and endpoint selection
 
 The URL identifies a post or author profile; no separate timeline command exists.
 
@@ -18,20 +18,15 @@ npx feeds show 'https://x.com/OpenAI/status/2082577277246972300'
 npx feeds show --context 'https://x.com/OpenAI/status/2082577277246972300'
 npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
 npx feeds show --context --answers 'https://x.com/OpenAI/status/2082577277246972300'
-npx feeds show 'https://x.com/OpenAI' --limit 25
+npx feeds show 'https://x.com/OpenAI'
 ```
 
-Options may precede or follow the URL. `--context` includes available ancestors;
-`--answers` includes available replies to the focal post. Both require a post URL.
-A profile URL reads the upstream author's timeline without local author/repost
-filtering. `--limit` sets its requested page size (1–100, default 25); it is not an
-aggregate result cap and is unsupported for post URLs.
-
-`--cursor` continues an author timeline or answers page. Copy `nextCursor` from the
-previous result and retain the same URL/scope. `--all` follows available cursors,
-deduplicates posts, and stops when no cursor remains. It fails on repeated cursors
-or after 100 pages requiring further continuation. No partial result is printed
-on failure. A single post/context request has no pagination.
+Options may precede or follow the URL. `--context` selects the thread endpoint;
+`--answers` selects the conversation endpoint and takes precedence when both are
+set. Both require a post URL. A profile URL reads the upstream author's timeline.
+Each call makes one request and returns the entire response without local filtering.
+The upstream defaults determine the amount and scope of returned data.
+There are no `--all`, `--cursor`, or `--limit` options.
 
 ## Input and output
 
@@ -42,15 +37,14 @@ and `mobile.twitter.com`. Post paths are `/<handle>/status/<numeric-id>` or
 optional trailing slash. Handles contain 1–15 ASCII letters, digits, or underscores;
 known navigation paths such as `/home` and `/search` are rejected. Query strings
 and fragments are ignored. Credentials, nonstandard ports, other hosts, bare IDs,
-bare handles, and internal Feeds URIs are rejected by the CLI. The
-[MCP interface](MCP.md) additionally accepts internal URIs and bare references
-when exactly one platform is configured.
+bare handles, and internal Feeds URIs are rejected. The [MCP interface](MCP.md)
+accepts the same public URLs.
 
-The CLI prints `FeedPage { posts, nextCursor? }` as JSON, indented with two spaces
-and a trailing newline. Each post has `ref`, optional reply `parent`, and unchanged
-upstream post `data`. This replaces the V1 raw response envelope. Parent posts may
-be absent from a page. Neither missing parents nor absent continuation prove a
-complete view of X. See architecture for ordering and JSON precision semantics.
+The CLI prints the complete upstream JSON object, indented with two spaces and a
+trailing newline. Envelopes, groups, duplicates, unknown fields and any upstream
+cursor fields are preserved. No wrapper or metadata is added. JSON values are
+preserved subject to standard JavaScript numeric precision; original bytes and
+whitespace are not. There is no automatic continuation or completeness guarantee.
 
 Diagnostics use `CODE: message` on stderr. Exit codes:
 

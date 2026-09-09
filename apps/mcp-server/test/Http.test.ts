@@ -18,16 +18,14 @@ test("HTTP protocol discovery, retrieval, validation and bounded bodies", async 
   try {
     await client.connect(new StreamableHTTPClientTransport(endpoint));
     assert.deepEqual((await client.listTools()).tools.map(t => t.name), ["get_feed"]);
-    assert.equal((await client.listResourceTemplates()).resourceTemplates[0]?.uriTemplate, "feeds://{platform}/{reference}");
-    assert.equal((await client.callTool({ name: "get_feed", arguments: { source: "feeds://x/123" } })).isError, undefined);
-    assert.equal((await client.readResource({ uri: "feeds://x/123" })).contents.length, 1);
-    assert.equal(calls, 2);
-    for (const args of [{ source: "feeds://x/123", limit: 2 }, { source: "feeds://x/alice", context: true }, { source: "feeds://x/123", cursor: "x" }, { source: "feeds://x/123", limit: 0 }]) {
+    assert.equal((await client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } })).isError, undefined);
+    assert.equal(calls, 1);
+    for (const args of [{ source: "https://x.com/a/status/123", limit: 2 }, { source: "https://x.com/alice", context: true }, { source: "https://x.com/a/status/123", cursor: "x" }, { source: "https://x.com/a/status/123", limit: 0 }]) {
       // Invalid schemas may be protocol errors; unsupported provider combinations are tool errors.
       try { assert.equal((await client.callTool({ name: "get_feed", arguments: args })).isError, true); }
       catch (error) { assert.match(String(error), /[Ii]nvalid|[Ll]imit|[Ss]chema/); }
     }
-    assert.equal(calls, 2);
+    assert.equal(calls, 1);
     assert.deepEqual(await (await fetch(new URL("/health", endpoint))).json(), { status: "ok" });
     assert.equal((await fetch(endpoint, { method: "POST", headers: { origin: "https://evil.test" }, body: "{}" })).status, 403);
     const rejectedHost = await new Promise<number | undefined>((resolve, reject) => {
@@ -42,7 +40,7 @@ test("HTTP protocol discovery, retrieval, validation and bounded bodies", async 
       request.write("x".repeat(2048)); request.end("x".repeat(2049));
     });
     assert.equal(status, 413);
-    assert.equal(calls, 2);
+    assert.equal(calls, 1);
   } finally { await client.close(); server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });
 
@@ -62,7 +60,7 @@ test("disconnecting an HTTP caller aborts upstream work", { timeout: 5000 }, asy
   const transport = new StreamableHTTPClientTransport(endpoint, { fetch: (url, init) => fetch(url, { ...init, signal: controller.signal }) });
   try {
     await client.connect(transport);
-    const pending = client.callTool({ name: "get_feed", arguments: { source: "feeds://x/123" } });
+    const pending = client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
     const failed = assert.rejects(pending);
     await didStart;
     controller.abort();

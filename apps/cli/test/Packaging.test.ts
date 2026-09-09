@@ -10,7 +10,7 @@ import test from "node:test";
 const exec = promisify(execFile);
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 
-test("local npx executes the committed bundle and returns the normalized feed", async () => {
+test("local npx executes the committed bundle and returns the complete upstream JSON", async () => {
   const directory = await mkdtemp(join(tmpdir(), "feeds-test-"));
   try {
     const preload = join(directory, "fetch.mjs");
@@ -22,7 +22,7 @@ globalThis.fetch = async (url, options) => {
 };`);
     const env = { ...process.env, FEEDS_X_PROVIDER: "fxtwitter", NODE_OPTIONS: `--import=${preload}` };
     const result = await exec("npx", ["--no-install", "feeds", "show", "https://x.com/alice/status/123"], { cwd: root, env });
-    assert.deepEqual(JSON.parse(result.stdout), { posts: [{ ref: { kind: "post", platform: "x", id: "123" }, data: { id: "123", text: "Hello 🌍", unknown: [null, 42] } }] });
+    assert.deepEqual(JSON.parse(result.stdout), { status: { id: "123", text: "Hello 🌍", unknown: [null, 42] } });
     assert.equal(result.stderr, "");
     await assert.rejects(exec(process.execPath, [join(root, "dist/feeds-cli.mjs"), "show", "123"], { env }), (error: unknown) => {
       const failure = error as { code: number; stdout: string; stderr: string };
