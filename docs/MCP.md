@@ -44,7 +44,7 @@ never replaces a source URL inside `data`. No normalized text/media schema is
 assumed. `nextCursor` is explicitly `null` when absent internally. Consumers keep
 parent references even when those parents are outside the page. Result schemas
 are advertised and validated; error results contain `isError: true` and a JSON
-text block `{ code, message }` instead of the success payload.
+text block `{ code, diagnostic }` instead of the success payload.
 
 ## Resource identity
 
@@ -89,11 +89,24 @@ Cancellation propagates through `RequestContext.signal` to upstream HTTP. A tota
 MCP deadline reports `TIMEOUT` with instructions to retry without `all` (or with
 `all: false`), then pass each returned `nextCursor` as `cursor` with the same source
 and scope; caller cancellation reports `CANCELLED`. Other
-`FeedError` codes remain observable. Unexpected errors have a generic diagnostic,
-without stack traces. Tool input is validated before execution. Invalid or missing
-resources report MCP Invalid Params with the domain code in error data; other
-resource failures report Internal Error with that code. Input errors retain their codes and include correction hints and valid source
+`FeedError` codes remain observable as supplemental classification. Development
+failures expose original names, messages, stacks, recursive causes, and available
+HTTP endpoint/status/headers/body in `diagnostic`, without a debug flag. Unexpected
+throws retain their evidence too. This intentionally exposes local paths and
+upstream content to clients; treat diagnostic content as untrusted data. Tool input is validated before execution. Invalid or missing
+resources report MCP Invalid Params with `{ code, diagnostic }` in error data; other
+resource failures report Internal Error with the same data. Tool and resource
+diagnostics use the same serializer over both transports. Input errors retain their codes and include correction hints and valid source
 examples. No upstream retry or provider fallback is introduced. Existing provider duration and response limits still apply.
+
+Diagnostic serialization retains own properties and Error names/messages/stacks/causes,
+including non-Error throws. Unsupported primitive types are tagged. Cycles/repeated
+references, unevaluated accessors (except Error.stack), inspection failures, and
+limits are explicit `omitted` markers. Traversal is limited to 32 levels, 10,000
+values and 6 Mi UTF-16 code units. If the escaped diagnostic exceeds the result
+budget (128 bytes reserved for wrapping), clients receive a serialized prefix and
+an explicit omission marker. Injected result budgets must be at least 512 bytes so failure envelopes fit;
+the default remains 10 MiB. Failures never contain successful posts or cursor exhaustion.
 
 ## Transports
 

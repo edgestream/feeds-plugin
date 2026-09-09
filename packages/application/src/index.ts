@@ -17,7 +17,7 @@ export class FeedService {
   }
 
   async show(input: string, options: FeedOptions & { readonly all?: boolean; readonly maxBytes?: number } = {}, context: RequestContext = {}): Promise<FeedPage> {
-    if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.");
+    if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
     return this.get(this.resolveUrl(input), options, context);
   }
 
@@ -70,7 +70,7 @@ export class FeedService {
     let cursor = options.cursor;
     if (cursor) seen.add(cursor);
     for (let pageNumber = 0; pageNumber < 100; pageNumber++) {
-      if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.");
+      if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
       const page = await provider.get({ subject: ref, ...(options.scope ? { scope: options.scope } : {}), ...(options.limit !== undefined ? { limit: options.limit } : {}), ...(cursor !== undefined ? { cursor } : {}) }, context);
       for (const post of page.posts) {
         if (options.maxBytes !== undefined) {

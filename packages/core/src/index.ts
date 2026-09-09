@@ -48,8 +48,10 @@ export type ErrorCode = "INVALID_INPUT" | "CONFIGURATION" | "NOT_FOUND" |
   "RATE_LIMITED" | "UPSTREAM" | "INVALID_RESPONSE" | "TIMEOUT" | "CANCELLED";
 
 export class FeedError extends Error {
-  constructor(readonly code: ErrorCode, message: string, options?: ErrorOptions) {
+  readonly diagnostics?: unknown;
+  constructor(readonly code: ErrorCode, message: string, options?: ErrorOptions & { diagnostics?: unknown }) {
     super(message, options);
     this.name = "FeedError";
+    this.diagnostics = options?.diagnostics;
   }
 }

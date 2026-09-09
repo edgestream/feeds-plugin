@@ -16,7 +16,13 @@ and depends only on core, never CLI, MCP, runtime, or another provider.
 - Accept cancellation through `RequestContext.signal`.
 - Inject HTTP collaborators for deterministic tests.
 - Bound duration and response size, validate feed structure, and report failures
-  through `FeedError`.
+  through `FeedError`. Retain original exceptions as recursive causes and available
+  HTTP diagnostics (endpoint, status, headers, body) in `diagnostics`. Read error
+  response bodies before classification, including 404. Bound capture and mark
+  omissions/truncation explicitly; invalid UTF-8 bytes require lossless encoding.
+  Preserve underlying errors and abort reasons for timeout/cancellation. MCP
+  exposes this development evidence without an opt-in flag, including stacks and
+  potentially sensitive upstream content/local paths; see [MCP.md](MCP.md).
 - Do not silently retry, fall back, or discover providers.
 
 Platforms own public URL recognition and internal `feeds://` reference semantics.

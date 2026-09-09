@@ -33,7 +33,8 @@ node ./dist/feeds-mcp-http.mjs  # HTTP at http://127.0.0.1:3000/mcp
 
 Node.js 24 or later is required. See [MCP setup and interface](docs/MCP.md) for
 remote ChatGPT connection and [plugin packaging](docs/PLUGIN.md) for installation
-metadata.
+metadata. Development failures expose detailed upstream diagnostics and stack
+traces to MCP clients; see the [error contract](docs/MCP.md#bounds-cancellation-errors).
 
 ## Development
 

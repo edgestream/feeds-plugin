@@ -72,7 +72,7 @@ test("paginates, deduplicates, detects loops and enforces result budget", async 
       else assert.deepEqual(result.structuredContent, { posts: [{ ...post, uri: "feeds://x/123456" }], nextCursor: null });
     } finally { await fixture.close(); }
   }
-  const fixture = await connect(async () => ({ posts: [post] }), { resultBytes: 80 });
+  const fixture = await connect(async () => ({ posts: [{ ...post, data: { text: "x".repeat(600) } }] }), { resultBytes: 512 });
   try {
     const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "feeds://x/123456" } });
     assert.equal(result.isError, true);
@@ -134,5 +134,42 @@ test("bare X references preserve response shapes and default to one page with co
     const metadata = JSON.stringify(tool.inputSchema);
     assert.match(metadata, /not an aggregate cap/);
     assert.match(metadata, /Does not guarantee completeness/);
+  } finally { await fixture.close(); }
+});
+
+test("unexpected errors and cyclic non-Error throws survive tool and resource serialization", async () => {
+  const cyclic: Record<string, unknown> = { detail: "original non-Error evidence", number: 10n };
+  cyclic.self = cyclic;
+  Object.defineProperty(cyclic, "getter", { get() { throw new Error("must not invoke"); } });
+  for (const error of [new FeedError("CANCELLED", "cancel evidence", { cause: new Error("abort evidence") }), new FeedError("TIMEOUT", "timeout evidence", { cause: new Error("deadline evidence") }), new TypeError("application exploded", { cause: new Error("root cause") }), cyclic, undefined]) {
+    const fixture = await connect(async () => { throw error; });
+    try {
+      const tool = await fixture.client.callTool({ name: "get_feed", arguments: { source: "123" } });
+      assert.equal(tool.isError, true);
+      assert.equal(tool.structuredContent, undefined);
+      const data = JSON.parse((tool.content as { text: string }[])[0]!.text);
+      await assert.rejects(fixture.client.readResource({ uri: "feeds://x/123" }), (failure: any) => {
+        assert.deepEqual(JSON.parse(JSON.stringify(failure.data)), data);
+        return true;
+      });
+      if (error instanceof Error) {
+        assert.equal(data.diagnostic.name, error.name);
+        assert.equal(data.diagnostic.stack, error.stack);
+        assert.equal(data.diagnostic.cause.message, (error.cause as Error).message);
+      } else if (error === cyclic) {
+        assert.match(data.diagnostic.self.omitted, /Cyclic/);
+        assert.match(data.diagnostic.getter.omitted, /Accessor/);
+      }
+    } finally { await fixture.close(); }
+  }
+});
+
+test("oversized failure diagnostics explicitly report truncation within the result budget", async () => {
+  const fixture = await connect(async () => { throw new Error("🧪".repeat(100_000)); }, { resultBytes: 4096 });
+  try {
+    const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "123" } });
+    assert.equal(result.isError, true);
+    assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 4096);
+    assert.match(JSON.stringify(result), /omitted.*budget/);
   } finally { await fixture.close(); }
 });
