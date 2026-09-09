@@ -33,8 +33,13 @@ npm test
 git diff --check
 ```
 
-These files prepare installation; they do not publish a marketplace entry, deploy
-a remote server, or install the plugin into a user's account.
+The plugin is available through the Edgestream Lab marketplace as
+`feeds-dev@edgestream-dev`. The marketplace lives in
+[`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace),
+separate from this package. It supplies installation and discovery; this
+repository still does not deploy a remote server or install the plugin into a
+user's account automatically. See the [MCP quickstart](MCP.md#get-started) for
+the ChatGPT desktop and Codex CLI installation paths.
 
 ## URL routing skill
 

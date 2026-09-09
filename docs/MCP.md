@@ -1,5 +1,51 @@
 # MCP interface
 
+## Get started
+
+Feeds is a read-only plugin for public social-media posts, available context,
+replies, and author feeds. Install the plugin to use it; running either MCP
+entry point directly is only needed for local development or a standalone MCP
+connection.
+
+### ChatGPT desktop app
+
+1. Open the **Plugins Directory** in ChatGPT desktop.
+2. Select the **Edgestream Lab** marketplace.
+3. Choose **Feeds Dev** and select **Install**.
+4. Start a new chat and ask, for example: “Read the feed at
+   `https://x.com/OpenAI`.”
+
+The plugin contributes both the Feeds MCP tool and its X-URL routing skill. The
+skill can select Feeds for retrieval requests that contain an `https://x.com`
+URL. In other requests, explicitly ask ChatGPT to use Feeds.
+
+### Codex CLI
+
+Add the Edgestream marketplace once, then install the plugin:
+
+```bash
+codex plugin marketplace add edgestream/agent-marketplace --ref development
+codex plugin add feeds-dev@edgestream-dev
+```
+
+Confirm that it is enabled with `codex plugin list`, then start a new Codex task
+and ask it to use Feeds. To update the marketplace snapshot later, run
+`codex plugin marketplace upgrade edgestream-dev` and reinstall the plugin if a
+new version is available.
+
+For a checkout-local MCP server instead of the plugin, build the project and
+register its stdio entry point from the repository root:
+
+```bash
+npm ci
+npm run build
+codex mcp add feeds -- node "$(pwd)/dist/feeds-mcp.mjs"
+codex mcp get feeds
+```
+
+This standalone configuration provides the MCP server but not the plugin’s URL
+routing skill.
+
 ## Architecture
 
 `apps/mcp-server` is a thin adapter over `FeedService`, following the Recipes
