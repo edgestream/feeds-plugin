@@ -1,7 +1,5 @@
 # Feeds Plugin
 
-Read social media feeds.
-
 ## MCP
 
 For the quickest setup, install **Feeds Dev** from our marketplace in the

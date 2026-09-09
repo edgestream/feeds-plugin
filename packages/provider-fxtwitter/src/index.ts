@@ -1,4 +1,4 @@
-import { FeedError, type JsonObject, type FeedProvider, type FeedQuery, type FeedPage, type FeedPost, type RequestContext } from "@edgestream/feeds-core";
+import { FeedError, type JsonObject, type FeedProvider, type FeedOptions, type RequestContext } from "@edgestream/feeds-core";
 
 export interface FxTwitterOptions {
   readonly fetch?: typeof globalThis.fetch;
@@ -22,103 +22,23 @@ export class FxTwitterProvider implements FeedProvider {
     }
   }
 
-  async get(query: FeedQuery, context: RequestContext = {}): Promise<FeedPage> {
-    const { subject, scope = {}, cursor, limit } = query;
-    if (subject.platform !== this.platform ||
-        (subject.kind === "post" ? !/^[0-9]+$/u.test(subject.id) :
-          subject.kind !== "author" || !/^[a-zA-Z0-9_]{1,15}$/u.test(subject.handle))) {
-      throw new FeedError("INVALID_INPUT", "fxTwitter requires a valid X post or author reference.");
+  async get(url: URL, options: FeedOptions = {}, context: RequestContext = {}): Promise<JsonObject> {
+    const post = /^\/(?:[a-zA-Z0-9_]{1,15}|i\/web)\/status\/([0-9]+)(?:\/(?:photo|video)\/[1-9][0-9]*)?\/?$/u.exec(url.pathname);
+    const author = /^\/([a-zA-Z0-9_]{1,15})\/?$/u.exec(url.pathname);
+    const hosts = ["x.com", "www.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com"];
+    const reserved = ["home", "explore", "search", "notifications", "messages", "settings", "i", "intent", "compose", "login", "logout", "signup", "tos", "privacy"];
+    if (!hosts.includes(url.hostname) || !["http:", "https:"].includes(url.protocol) || url.username || url.password || url.port ||
+        (!post && (!author || reserved.includes(author[1]!.toLowerCase())))) {
+      throw new FeedError("INVALID_INPUT", "Expected a public X post or profile URL.");
     }
-    const paginated = subject.kind === "author" || scope.replies;
-    if ((cursor !== undefined && (!paginated || typeof cursor !== "string" || !cursor || cursor.length > 16384)) ||
-        (limit !== undefined && (subject.kind !== "author" || !Number.isInteger(limit) || limit < 1 || limit > 100)) ||
-        (subject.kind === "author" && (scope.ancestors || scope.replies))) {
-      throw new FeedError("INVALID_INPUT", "Context and answers require a post; limit requires an author; cursor requires a paginated feed.");
-    }
-    const path = subject.kind === "author" ? `profile/${subject.handle}/statuses` :
-      `${scope.replies ? "conversation" : scope.ancestors ? "thread" : "status"}/${subject.id}`;
-    const params = new URLSearchParams();
-    if (subject.kind === "author") params.set("count", String(limit ?? 25));
-    if (cursor) params.set("cursor", cursor);
-    const { payload, diagnostics } = await this.request(`${path}${params.size ? `?${params}` : ""}`, context, subject.kind === "author");
-    try {
-      const posts = new Map<string, FeedPost>();
-      const add = (value: unknown, fallbackId?: string): void => {
-        if (!isObject(value)) invalid("Expected a post object.");
-        const id = value.id ?? (value.type === "tombstone" ? fallbackId : undefined);
-        if (typeof id !== "string" || !/^[0-9]+$/u.test(id)) invalid("Expected a numeric post ID.");
-        let parent: FeedPost["parent"];
-        if (value.replying_to != null) {
-          const reply = value.replying_to;
-          if (!isObject(reply) || typeof reply.status !== "string" || !/^[0-9]+$/u.test(reply.status) || reply.status === id) invalid("Invalid reply relationship.");
-          parent = { kind: "post", platform: "x", id: reply.status };
-        }
-        posts.set(id, { ref: { kind: "post", platform: "x", id }, ...(parent ? { parent } : {}), data: value });
-      };
-      const addList = (value: unknown): void => {
-        if (!Array.isArray(value)) invalid("Expected a post list.");
-        for (const entry of value) {
-          if (isObject(entry) && entry.type === "thread") {
-            if (!Array.isArray(entry.statuses)) invalid("Expected thread statuses.");
-            for (const status of entry.statuses) add(status);
-          } else add(entry);
-        }
-      };
-      if (subject.kind === "author") addList(payload.results);
-      else {
-        if (payload.status == null) throw new FeedError("NOT_FOUND", "fxTwitter returned no focal post.");
-        add(payload.status, subject.id);
-        if (!posts.has(subject.id)) invalid("The focal post does not match the requested ID.");
-        if (scope.ancestors || scope.replies) {
-          if (payload.thread !== null) addList(payload.thread);
-        }
-        const replyIds = new Set<string>();
-        if (scope.replies && payload.replies !== null) {
-          if (!Array.isArray(payload.replies)) invalid("Expected replies.");
-          for (const reply of payload.replies) {
-            add(reply);
-            replyIds.add((reply as JsonObject).id as string);
-          }
-        }
-        // Keep only the requested ancestor chain and descendants of the focal post.
-        const selected = new Set([subject.id]);
-        const ancestors = new Set<string>();
-        {
-          let current = posts.get(subject.id)?.parent?.id;
-          while (current && posts.has(current)) {
-            if (current === subject.id || ancestors.has(current)) invalid("Cyclic reply relationship.");
-            ancestors.add(current);
-            if (scope.ancestors) selected.add(current);
-            current = posts.get(current)?.parent?.id;
-          }
-        }
-        if (scope.replies) {
-          for (const post of posts.values()) {
-            const visited = new Set<string>();
-            let current: string | undefined = post.ref.id;
-            while (current && current !== subject.id && !ancestors.has(current) && posts.has(current)) {
-              if (visited.has(current)) invalid("Cyclic reply relationship.");
-              visited.add(current);
-              current = posts.get(current)?.parent?.id;
-            }
-            // A missing parent is valid on a later reply page; the endpoint supplies reply membership.
-            if (current === subject.id || (replyIds.has(post.ref.id) && current && !posts.has(current))) selected.add(post.ref.id);
-          }
-        }
-        for (const id of posts.keys()) if (!selected.has(id)) posts.delete(id);
-      }
-      let nextCursor: string | undefined;
-      if (paginated && payload.cursor != null) {
-        if (!isObject(payload.cursor) || (payload.cursor.bottom != null && typeof payload.cursor.bottom !== "string")) invalid("Invalid pagination cursor.");
-        nextCursor = payload.cursor.bottom as string | undefined;
-      }
-      return { posts: [...posts.values()], ...(nextCursor ? { nextCursor } : {}) };
-    } catch (cause) {
-      throw new FeedError(cause instanceof FeedError ? cause.code : "UPSTREAM", cause instanceof FeedError ? cause.message : "fxTwitter response mapping failed.", { cause, diagnostics });
-    }
+    if (!post && (options.context || options.answers)) throw new FeedError("INVALID_INPUT", "Context and answers require a post URL.");
+    const path = post
+      ? `${options.answers ? "conversation" : options.context ? "thread" : "status"}/${post[1]}`
+      : `profile/${author![1]!.toLowerCase()}/statuses`;
+    return this.request(path, context);
   }
 
-  private async request(path: string, context: RequestContext, allowEmpty: boolean): Promise<{ payload: JsonObject; diagnostics: Record<string, unknown> }> {
+  private async request(path: string, context: RequestContext): Promise<JsonObject> {
     if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
     const controller = new AbortController();
     const cancel = () => controller.abort(context.signal?.reason);
@@ -159,22 +79,16 @@ export class FxTwitterProvider implements FeedProvider {
         await reader.cancel().catch(error => { diagnostics.cleanupFailure = error; });
         reader.releaseLock();
       }
-      if (response.status === 404 && !allowEmpty) throw new FeedError("NOT_FOUND", "fxTwitter could not find the post.");
+      if (response.status === 404) throw new FeedError("NOT_FOUND", "fxTwitter returned HTTP 404.");
       if (response.status === 429) throw new FeedError("RATE_LIMITED", "fxTwitter rate limit exceeded.");
-      if (!response.ok && !(allowEmpty && response.status === 404)) throw new FeedError("UPSTREAM", `fxTwitter returned HTTP ${response.status}.`);
+      if (!response.ok) throw new FeedError("UPSTREAM", `fxTwitter returned HTTP ${response.status}.`);
       let payload: unknown;
       try { payload = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks))); }
       catch (cause) { throw new FeedError("INVALID_RESPONSE", "fxTwitter returned invalid JSON.", { cause }); }
       if (payload === null || typeof payload !== "object" || Array.isArray(payload)) {
         throw new FeedError("INVALID_RESPONSE", "fxTwitter returned a non-object JSON response.");
       }
-      const result = payload as JsonObject;
-      if (response.status === 404 && (!Array.isArray(result.results) || result.results.length !== 0)) throw new FeedError("NOT_FOUND", "fxTwitter could not find the author.");
-      if (typeof result.code === "number" && result.code !== 200 && !(allowEmpty && result.code === 404 && Array.isArray(result.results) && result.results.length === 0)) {
-        throw new FeedError(result.code === 404 ? "NOT_FOUND" : result.code === 429 ? "RATE_LIMITED" : "UPSTREAM", `fxTwitter returned code ${result.code}.`);
-      }
-      diagnostics.body = new TextDecoder("utf-8", { ignoreBOM: true }).decode(Buffer.concat(chunks));
-      return { payload: result, diagnostics };
+      return payload as JsonObject;
     } catch (cause) {
       if (response) {
         const bytes = Buffer.concat(chunks);
@@ -194,8 +108,3 @@ export class FxTwitterProvider implements FeedProvider {
     }
   }
 }
-
-function isObject(value: unknown): value is JsonObject {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-function invalid(message: string): never { throw new FeedError("INVALID_RESPONSE", message); }

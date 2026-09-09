@@ -60,7 +60,7 @@ Automatic skill selection depends on the host/model. Explicitly requesting Feeds
 or invoking `read-x` is a routing workaround; tool failures remain failures.
 
 Packaging tests check both skill discovery paths in an isolated installation and
-retain MCP discovery and injected-response retrieval. They do not prove model
+retain tool-only MCP discovery and complete upstream JSON retrieval against injected responses. They do not prove model
 activation. The maintainer reported successful completion of the manual routing
 tests, including actual MCP calls returning tweets or profiles. See the
 [routing evaluation protocol and recorded result](URL_ROUTING.md) for the tested

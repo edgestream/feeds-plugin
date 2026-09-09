@@ -67,29 +67,21 @@ test("installed portable and Codex layouts discover the same companion skill", a
 });
 async function verify(client: Client) {
   assert.deepEqual((await client.listTools()).tools.map(t => t.name), ["get_feed"]);
-  assert.deepEqual((await client.listResources()).resources, []);
-  assert.equal((await client.listResourceTemplates()).resourceTemplates[0]?.uriTemplate, "feeds://{platform}/{reference}");
-  const result = await client.callTool({ name: "get_feed", arguments: { source: "feeds://x/123" } });
+  assert.equal(client.getServerCapabilities()?.resources, undefined);
+  const result = await client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
   assert.equal(result.isError, undefined);
-  assert.match(JSON.stringify(result.structuredContent), /bundle fixture/);
-  assert.equal((await client.readResource({ uri: "feeds://x/123" })).contents.length, 1);
+  assert.deepEqual(result.structuredContent, { status: { id: "123", text: "bundle fixture" } });
   for (const [id, evidence] of [["404", "diagnostic body 404"], ["429", "diagnostic body 429"], ["500", "diagnostic body 500"], ["501", "socket evidence"], ["502", "SyntaxError"], ["503", "stream cause"], ["504", "TypeError"], ["505", "timeout transport evidence"]]) {
-    const failed = await client.callTool({ name: "get_feed", arguments: { source: id } });
+    const failed = await client.callTool({ name: "get_feed", arguments: { source: `https://x.com/a/status/${id}` } });
     assert.equal(failed.isError, true);
     assert.equal(failed.structuredContent, undefined);
     const data = JSON.parse((failed.content as { text: string }[])[0]!.text);
     assert.match(JSON.stringify(data), new RegExp(evidence!));
     assert.match(JSON.stringify(data), /https:\/\/api.fxtwitter.com\/2\/status\//);
-    await assert.rejects(client.readResource({ uri: `feeds://x/${id}` }), (error: any) => {
-      assert.equal(error.data.code, data.code);
-      assert.match(JSON.stringify(error.data), new RegExp(evidence!));
-      if (["404", "429", "500"].includes(id!)) {
-        assert.equal(error.data.diagnostic.diagnostics.status, Number(id));
-        assert.equal(error.data.diagnostic.diagnostics.headers["x-evidence"], "upstream-header");
-        assert.deepEqual(error.data.diagnostic.diagnostics, data.diagnostic.diagnostics);
-      }
-      return true;
-    });
+    if (["404", "429", "500"].includes(id!)) {
+      assert.equal(data.diagnostic.diagnostics.status, Number(id));
+      assert.equal(data.diagnostic.diagnostics.headers["x-evidence"], "upstream-header");
+    }
   }
 }
 

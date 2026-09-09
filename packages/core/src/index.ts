@@ -1,42 +1,16 @@
 export interface Platform {
   readonly id: string;
-  resolve(url: URL): FeedSubject | undefined;
-  parseReference(reference: string): FeedSubject;
-  formatReference(subject: FeedSubject): string;
+  supports(url: URL): boolean;
 }
 
-export interface PostRef {
-  readonly kind: "post";
-  readonly platform: string;
-  readonly id: string;
-}
-export interface AuthorRef {
-  readonly kind: "author";
-  readonly platform: string;
-  readonly handle: string;
-}
-export type FeedSubject = PostRef | AuthorRef;
 export interface FeedOptions {
-  readonly scope?: { readonly ancestors?: boolean; readonly replies?: boolean };
-  readonly cursor?: string;
-  readonly limit?: number;
-}
-export interface FeedQuery extends FeedOptions { readonly subject: FeedSubject }
-export interface FeedPost {
-  readonly ref: PostRef;
-  /** Reply relationship; the parent need not occur on this page. */
-  readonly parent?: PostRef;
-  readonly data: JsonObject;
-}
-export interface FeedPage {
-  readonly posts: readonly FeedPost[];
-  /** Provider-owned continuation; absence does not prove upstream completeness. */
-  readonly nextCursor?: string;
+  readonly context?: boolean;
+  readonly answers?: boolean;
 }
 export interface FeedProvider {
   readonly id: string;
   readonly platform: string;
-  get(query: FeedQuery, context?: RequestContext): Promise<FeedPage>;
+  get(url: URL, options?: FeedOptions, context?: RequestContext): Promise<JsonObject>;
 }
 
 export interface RequestContext { readonly signal?: AbortSignal }
