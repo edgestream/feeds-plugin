@@ -5,4 +5,3 @@ export const inputSchema = z.object({
   context: z.boolean().optional().describe("Request the thread endpoint for a post."),
   answers: z.boolean().optional().describe("Request the conversation endpoint for a post; takes precedence over context."),
 }).strict();
-export const outputSchema = z.record(z.string(), z.json());

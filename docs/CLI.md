@@ -51,7 +51,7 @@ Diagnostics use `CODE: message` on stderr. Exit codes:
 | Code | Meaning |
 | --- | --- |
 | 0 | Success or help |
-| 1 | Configuration, upstream, rate limit, missing subject, timeout, or response error |
+| 1 | Configuration, upstream, rate limit, missing subject, or response error |
 | 2 | Invalid command, URL, or unsupported query options |
 | 130 | Cancelled through SIGINT |
 

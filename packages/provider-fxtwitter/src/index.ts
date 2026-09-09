@@ -2,24 +2,15 @@ import { FeedError, type JsonObject, type FeedProvider, type FeedOptions, type R
 
 export interface FxTwitterOptions {
   readonly fetch?: typeof globalThis.fetch;
-  readonly timeoutMs?: number;
-  readonly maxResponseBytes?: number;
 }
 
 export class FxTwitterProvider implements FeedProvider {
   readonly id = "fxtwitter";
   readonly platform = "x";
   private readonly fetch: typeof globalThis.fetch;
-  private readonly timeoutMs: number;
-  private readonly maxResponseBytes: number;
 
   constructor(options: FxTwitterOptions = {}) {
     this.fetch = options.fetch ?? globalThis.fetch;
-    this.timeoutMs = options.timeoutMs ?? 20_000;
-    this.maxResponseBytes = options.maxResponseBytes ?? 5 * 1024 * 1024;
-    if (![this.timeoutMs, this.maxResponseBytes].every(value => Number.isSafeInteger(value) && value > 0) || this.timeoutMs > 2_147_483_647) {
-      throw new FeedError("CONFIGURATION", "Request limits must be positive safe integers; timeout must fit a Node timer.");
-    }
   }
 
   async get(url: URL, options: FeedOptions = {}, context: RequestContext = {}): Promise<JsonObject> {
@@ -40,71 +31,21 @@ export class FxTwitterProvider implements FeedProvider {
 
   private async request(path: string, context: RequestContext): Promise<JsonObject> {
     if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
-    const controller = new AbortController();
-    const cancel = () => controller.abort(context.signal?.reason);
-    context.signal?.addEventListener("abort", cancel, { once: true });
-    let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, this.timeoutMs);
-    let response: Response | undefined;
-    const diagnostics: Record<string, unknown> = { endpoint: `https://api.fxtwitter.com/2/${path}` };
-    const chunks: Uint8Array[] = [];
     try {
-      response = await this.fetch(diagnostics.endpoint as string, {
+      const response = await this.fetch(`https://api.fxtwitter.com/2/${path}`, {
         headers: { Accept: "application/json", "User-Agent": "feeds-plugin/0.1.0 (read-only)" },
         redirect: "error",
-        signal: controller.signal,
+        ...(context.signal ? { signal: context.signal } : {}),
       });
-      Object.assign(diagnostics, { status: response.status, statusText: response.statusText,
-        headers: Object.fromEntries(response.headers), body: "" });
-      if (Number(response.headers.get("content-length")) > this.maxResponseBytes) {
-        diagnostics.bodyOmitted = "Declared content-length exceeds response byte limit.";
-        throw new FeedError("INVALID_RESPONSE", "fxTwitter response exceeds the size limit.");
-      }
-      if (!response.body) throw new FeedError("INVALID_RESPONSE", "fxTwitter returned an empty response.");
-      const reader = response.body.getReader();
-      let size = 0;
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const remaining = this.maxResponseBytes - size;
-          chunks.push(Uint8Array.from(value.subarray(0, remaining)));
-          size += value.byteLength;
-          if (size > this.maxResponseBytes) {
-            diagnostics.bodyTruncated = `Response exceeds ${this.maxResponseBytes} bytes.`;
-            throw new FeedError("INVALID_RESPONSE", "fxTwitter response exceeds the size limit.");
-          }
-        }
-      } finally {
-        await reader.cancel().catch(error => { diagnostics.cleanupFailure = error; });
-        reader.releaseLock();
-      }
       if (response.status === 404) throw new FeedError("NOT_FOUND", "fxTwitter returned HTTP 404.");
-      if (response.status === 429) throw new FeedError("RATE_LIMITED", "fxTwitter rate limit exceeded.");
+      if (response.status === 429) throw new FeedError("RATE_LIMITED", "fxTwitter returned HTTP 429.");
       if (!response.ok) throw new FeedError("UPSTREAM", `fxTwitter returned HTTP ${response.status}.`);
-      let payload: unknown;
-      try { payload = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks))); }
-      catch (cause) { throw new FeedError("INVALID_RESPONSE", "fxTwitter returned invalid JSON.", { cause }); }
-      if (payload === null || typeof payload !== "object" || Array.isArray(payload)) {
-        throw new FeedError("INVALID_RESPONSE", "fxTwitter returned a non-object JSON response.");
-      }
-      return payload as JsonObject;
+      return await response.json();
     } catch (cause) {
-      if (response) {
-        const bytes = Buffer.concat(chunks);
-        try { diagnostics.body = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes); }
-        catch { diagnostics.bodyBase64 = bytes.toString("base64"); diagnostics.bodyEncoding = "base64 (invalid UTF-8)"; }
-        if (!(cause instanceof FeedError)) diagnostics.bodyIncomplete = "Body retrieval failed; only received bytes are included.";
-      }
-      diagnostics.abortReason = controller.signal.aborted ? controller.signal.reason : undefined;
-      if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause, diagnostics });
-      if (timedOut) throw new FeedError("TIMEOUT", "fxTwitter request timed out.", { cause, diagnostics });
-      if (cause instanceof FeedError) throw new FeedError(cause.code, cause.message, { cause, diagnostics });
-      throw new FeedError("UPSTREAM", "fxTwitter request failed.", { cause, diagnostics });
-    } finally {
-      clearTimeout(timer);
-      context.signal?.removeEventListener("abort", cancel);
-      await response?.body?.cancel().catch(() => {});
+      if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause });
+      if (cause instanceof FeedError) throw cause;
+      if (cause instanceof SyntaxError) throw new FeedError("INVALID_RESPONSE", cause.message, { cause });
+      throw new FeedError("UPSTREAM", cause instanceof Error ? cause.message : "fxTwitter request failed.", { cause });
     }
   }
 }
