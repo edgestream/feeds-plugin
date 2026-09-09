@@ -13,6 +13,7 @@
     "mcp"
   ],
   "mcpServers": "./.mcp.json",
+  "skills": "./skills/",
   "interface": {
     "displayName": "Feeds Dev",
     "shortDescription": "Read public social media feeds",
