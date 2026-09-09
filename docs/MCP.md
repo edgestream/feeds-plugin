@@ -12,11 +12,21 @@ the MCP TypeScript SDK 2 and Zod 4 share the existing workspace toolchain.
 
 `get_feed(source, context?, answers?, cursor?, limit?, all?)` reads public posts,
 available ancestors, replies, and author feeds. `source` accepts a supported public
-URL or a `feeds://` URI. Options have the same meaning and restrictions as the
+URL, a `feeds://` URI, or a bare reference when exactly one platform is configured.
+With the current X configuration, `OpenAI` and `author_name` are author handles;
+all-digit strings such as `123456` are post IDs. Existing X handle rules apply
+(1–15 ASCII letters, digits or underscores, no @, no reserved navigation names).
+Malformed or unsupported URLs are rejected, never retried as handles. With zero
+or multiple platforms, use an explicit URL or URI. Options have the same meaning and restrictions as the
 [CLI](CLI.md): `limit` is an author page size (1–100, default 25), context/answers
 require a post, and cursors require authors or answers. Defaults are false for
 context, answers, and all. There is no search, writing, media download, cache,
 subscription, or background refresh.
+
+When the desired post count is unspecified, start with one page without `all`.
+Use `all: true` only when the user explicitly requests full traversal of available
+pages. `limit` controls author page size, not a total post count. All traversed
+pages share the 60-second total request budget, without a completeness guarantee.
 
 The tool declares read-only, non-destructive, idempotent, open-world annotations.
 Its description and server instructions explain selection, paging, incomplete
@@ -76,12 +86,14 @@ author limit if necessary. `all` additionally retains the application limit of
 prove a complete view of the platform.
 
 Cancellation propagates through `RequestContext.signal` to upstream HTTP. A total
-MCP deadline reports `TIMEOUT`; caller cancellation reports `CANCELLED`. Other
+MCP deadline reports `TIMEOUT` with instructions to retry without `all` (or with
+`all: false`), then pass each returned `nextCursor` as `cursor` with the same source
+and scope; caller cancellation reports `CANCELLED`. Other
 `FeedError` codes remain observable. Unexpected errors have a generic diagnostic,
 without stack traces. Tool input is validated before execution. Invalid or missing
 resources report MCP Invalid Params with the domain code in error data; other
-resource failures report Internal Error with that code. No retry or fallback is
-introduced. Existing provider duration and response limits still apply.
+resource failures report Internal Error with that code. Input errors retain their codes and include correction hints and valid source
+examples. No upstream retry or provider fallback is introduced. Existing provider duration and response limits still apply.
 
 ## Transports
 

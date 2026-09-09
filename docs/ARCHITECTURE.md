@@ -68,7 +68,9 @@ parsing/formatting; new providers implement `FeedProvider`. Register them explic
 in runtime. `FeedService.get(subject, options, context)` routes direct references
 through the same retrieval implementation used by `show`. The application URI
 codec owns `feeds://{platform}/{encoded-reference}`; the platform owns meaning.
-X numeric references mean posts; author handles canonicalize to lowercase. Numeric
+`FeedService.resolveSource` resolves MCP URLs, internal URIs, and bare references
+through the sole configured platform; URL syntax never falls back to reference
+parsing. CLI `show` remains URL-only. X numeric references mean posts; author handles canonicalize to lowercase. Numeric
 authors remain accessible by public URL but cannot have an unambiguous internal URI.
 Composite collections can receive platform-specific semantics in future; X lists
 are not implemented.

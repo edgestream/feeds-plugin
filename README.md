@@ -21,8 +21,10 @@ npx feeds show 'https://x.com/OpenAI'
 ## MCP
 
 Use `get_feed` to read posts, context, replies or author feeds from ChatGPT or
-another MCP client. Sources include public URLs and short resource URIs such as
-`feeds://x/MayoOhnePommes` and `feeds://x/123456`.
+another MCP client. Sources include public URLs, resource URIs such as
+`feeds://x/OpenAI`, and bare X handles (`OpenAI`) or post IDs (`123456`) when only
+X is configured. Start with one page; use `all` only for explicitly requested full
+traversal and continue individual pages using `nextCursor`.
 
 ```bash
 node ./dist/feeds-mcp.mjs       # Local stdio plugin
