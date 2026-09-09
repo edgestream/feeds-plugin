@@ -1,0 +1,16 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "feeds-dev",
+  "version": "0.1.0",
+  "description": "Read public social media feeds",
+  "author": {
+    "name": "Edgestream"
+  },
+  "repository": "https://github.com/edgestream/feeds-plugin",
+  "keywords": [
+    "feeds",
+    "social-media",
+    "communications",
+    "mcp"
+  ]
+}

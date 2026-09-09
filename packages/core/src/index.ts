@@ -1,6 +1,8 @@
 export interface Platform {
   readonly id: string;
   resolve(url: URL): FeedSubject | undefined;
+  parseReference(reference: string): FeedSubject;
+  formatReference(subject: FeedSubject): string;
 }
 
 export interface PostRef {

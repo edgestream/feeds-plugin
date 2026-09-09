@@ -19,7 +19,8 @@ and depends only on core, never CLI, MCP, runtime, or another provider.
   through `FeedError`.
 - Do not silently retry, fall back, or discover providers.
 
-Platforms own public URL recognition. Providers own endpoints, query translation,
+Platforms own public URL recognition and internal `feeds://` reference semantics.
+MCP passes typed subjects through the application; providers never parse MCP URIs. Providers own endpoints, query translation,
 response parsing, and cursor handling. Runtime selects one provider per platform.
 Application owns optional all-page traversal. A provider using multiple paginated
 endpoints must encapsulate their continuation state in its own cursor.

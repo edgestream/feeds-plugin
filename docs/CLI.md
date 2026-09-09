@@ -63,4 +63,4 @@ Diagnostics use `CODE: message` on stderr. Exit codes:
 
 `FEEDS_X_PROVIDER` selects the X provider, defaulting to `fxtwitter` when absent.
 Empty/unknown values are configuration errors. Runtime configuration is shared
-with future MCP. No configurable API root, credentials, cache, fallback, or retries.
+with MCP. No configurable API root, credentials, cache, fallback, or retries.

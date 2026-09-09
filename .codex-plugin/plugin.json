@@ -1,0 +1,31 @@
+{
+  "name": "feeds-dev",
+  "version": "0.1.0",
+  "description": "Read public social media feeds",
+  "author": {
+    "name": "Edgestream"
+  },
+  "repository": "https://github.com/edgestream/feeds-plugin",
+  "keywords": [
+    "feeds",
+    "social-media",
+    "communications",
+    "mcp"
+  ],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Feeds Dev",
+    "shortDescription": "Read public social media feeds",
+    "longDescription": "Read public posts, available context, replies and author feeds from supported social platforms.",
+    "developerName": "Edgestream",
+    "category": "Communications",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Read the feed at feeds://x/MayoOhnePommes",
+      "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
+      "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
+    ]
+  }
+}
