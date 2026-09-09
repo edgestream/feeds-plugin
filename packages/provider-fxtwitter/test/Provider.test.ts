@@ -140,3 +140,31 @@ test("rejects unsafe subjects and incompatible options before HTTP", async () =>
   }
   await assert.rejects(provider.get({ subject: { kind: "author", platform: "x", handle: "alice" }, scope: { replies: true } }), { code: "INVALID_INPUT" });
 });
+
+test("retains received bytes, original causes and abort reasons", async () => {
+  const original = new TypeError("transport evidence", { cause: new Error("socket evidence") });
+  await assert.rejects(new FxTwitterProvider({ fetch: async () => { throw original; } }).get(ref), (error: any) => {
+    assert.equal(error.cause, original);
+    assert.equal(error.diagnostics.endpoint, `https://api.fxtwitter.com/2/status/${ref.subject.id}`);
+    return true;
+  });
+  for (const cancelled of [false, true]) {
+    const controller = new AbortController();
+    const reason = new Error("caller evidence");
+    const provider = new FxTwitterProvider({ timeoutMs: 5, fetch: async (_url, options) => new Promise((_resolve, reject) => {
+      options!.signal!.addEventListener("abort", () => reject(original), { once: true });
+      if (cancelled) controller.abort(reason);
+    }) });
+    await assert.rejects(provider.get(ref, { signal: controller.signal }), (error: any) => {
+      assert.equal(error.code, cancelled ? "CANCELLED" : "TIMEOUT");
+      assert.equal(error.cause, original);
+      if (cancelled) assert.equal(error.diagnostics.abortReason, reason);
+      return true;
+    });
+  }
+  await assert.rejects(new FxTwitterProvider({ maxResponseBytes: 4, fetch: async () => new Response("12345678") }).get(ref), (error: any) => {
+    assert.equal(error.diagnostics.body, "1234");
+    assert.match(error.diagnostics.bodyTruncated, /4 bytes/);
+    return true;
+  });
+});

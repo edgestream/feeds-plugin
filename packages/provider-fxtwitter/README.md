@@ -49,6 +49,18 @@ Application-level error codes are also checked. Invalid JSON, UTF-8, feed struct
 IDs, parent references, cursors, and oversized bodies map to `INVALID_RESPONSE`.
 Timeout maps to `TIMEOUT`. Missing focal posts map to `NOT_FOUND`.
 
+These codes supplement the original diagnostic evidence. Exceptions retain their
+causes; failures include the requested endpoint and available HTTP status, status
+text, headers and body, including 404/429/500 bodies. Body capture uses the same
+5-MiB bound: oversized declared bodies are explicitly omitted, oversized streamed
+bodies retain a marked prefix, and interrupted reads retain received bytes.
+Invalid UTF-8 is preserved as base64. Mapping failures also retain response details.
+Timeout/cancellation preserve the underlying exception and abort reason. The
+validated empty-author 404 compatibility behavior above remains unchanged.
+MCP exposes this development evidence, including stacks and potentially sensitive
+response content and local paths, without a debug flag; its serialization limits
+and explicit omission markers are documented in [MCP.md](../../docs/MCP.md).
+
 ## Limits
 
 Availability, context depth, reply coverage, and cursor behavior are controlled by
