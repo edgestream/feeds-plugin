@@ -36,8 +36,8 @@ test("discovers get_feed and generic resources and preserves provider data", asy
     assert.equal(resource.contents[0]?.mimeType, "application/json");
     assert.ok("text" in resource.contents[0]!);
     assert.deepEqual(JSON.parse(resource.contents[0].text), result.structuredContent);
-    await client.callTool({ name: "get_feed", arguments: { source: "feeds://x/MayoOhnePommes", limit: 12 } });
-    assert.deepEqual(queries.at(-1)?.subject, { kind: "author", platform: "x", handle: "mayoohnepommes" });
+    await client.callTool({ name: "get_feed", arguments: { source: "feeds://x/OpenAI", limit: 12 } });
+    assert.deepEqual(queries.at(-1)?.subject, { kind: "author", platform: "x", handle: "openai" });
     await client.callTool({ name: "get_feed", arguments: { source: "https://x.com/123456" } });
     assert.equal(queries.at(-1)?.subject.kind, "author");
     assert.throws(() => feeds.uri({ kind: "author", platform: "x", handle: "123456" }), { code: "INVALID_INPUT" });

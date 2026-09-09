@@ -13,7 +13,7 @@ the MCP TypeScript SDK 2 and Zod 4 share the existing workspace toolchain.
 `get_feed(source, context?, answers?, cursor?, limit?, all?)` reads public posts,
 available ancestors, replies, and author feeds. `source` accepts a supported public
 URL, a `feeds://` URI, or a bare reference when exactly one platform is configured.
-With the current X configuration, `OpenAI` and `author_name` are author handles;
+With the current X configuration, `OpenAI` is an author handle;
 all-digit strings such as `123456` are post IDs. Existing X handle rules apply
 (1–15 ASCII letters, digits or underscores, no @, no reserved navigation names).
 Malformed or unsupported URLs are rejected, never retried as handles. With zero
@@ -52,7 +52,7 @@ One non-enumerated resource template serves every configured platform:
 
 ```text
 feeds://{platform}/{reference}
-feeds://x/MayoOhnePommes
+feeds://x/OpenAI
 feeds://x/123456
 ```
 

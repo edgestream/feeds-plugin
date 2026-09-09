@@ -23,7 +23,7 @@
       "Read"
     ],
     "defaultPrompt": [
-      "Read the feed at feeds://x/MayoOhnePommes",
+      "Read the feed at feeds://x/OpenAI",
       "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
       "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
     ]

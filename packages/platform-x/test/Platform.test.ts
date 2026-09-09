@@ -34,7 +34,7 @@ test("recognizes author URLs and normalizes handles", () => {
 test("interprets short internal references without provider identity", () => {
   const platform = new XPlatform();
   assert.deepEqual(platform.parseReference("123456"), { kind: "post", platform: "x", id: "123456" });
-  assert.deepEqual(platform.parseReference("MayoOhnePommes"), { kind: "author", platform: "x", handle: "mayoohnepommes" });
+  assert.deepEqual(platform.parseReference("OpenAI"), { kind: "author", platform: "x", handle: "openai" });
   assert.deepEqual(platform.resolve(new URL("https://x.com/123456")), { kind: "author", platform: "x", handle: "123456" });
   for (const value of ["", "a/b", "a?b", "a#b", "home", "../alice", "a%2fb", "a".repeat(16)]) {
     assert.throws(() => platform.parseReference(value), { code: "INVALID_INPUT" }, value);
