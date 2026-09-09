@@ -4,11 +4,11 @@ import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { FeedService } from "@edgestream/feeds-application";
 import { FeedError, type FeedProvider } from "@edgestream/feeds-core";
 import { XPlatform } from "@edgestream/feeds-platform-x";
-import { createFeedsMcpServer, type FeedsMcpOptions } from "../src/index.js";
+import { createFeedsMcpServer } from "../src/index.js";
 
-async function connect(get: FeedProvider["get"], options: Partial<Omit<FeedsMcpOptions, "feeds">> = {}) {
+async function connect(get: FeedProvider["get"]) {
   const feeds = new FeedService([new XPlatform()], [{ id: "fake", platform: "x", get }]);
-  const server = createFeedsMcpServer({ feeds, ...options });
+  const server = createFeedsMcpServer({ feeds });
   const client = new Client({ name: "feeds-test", version: "1" });
   const [a, b] = InMemoryTransport.createLinkedPair();
   await server.connect(b);
@@ -29,6 +29,7 @@ test("advertises only a URL tool and returns complete provider JSON without reso
     const tools = (await fixture.client.listTools()).tools;
     assert.deepEqual(tools.map(tool => tool.name), ["get_feed"]);
     assert.equal(tools[0]?.annotations?.readOnlyHint, true);
+    assert.equal(tools[0]?.outputSchema, undefined);
     assert.deepEqual(Object.keys(tools[0]!.inputSchema.properties!), ["source", "context", "answers"]);
     assert.equal(fixture.client.getServerCapabilities()?.resources, undefined);
     const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123", context: true, answers: true } });
@@ -56,59 +57,31 @@ test("rejects references and removed page options before provider access", async
   } finally { await fixture.close(); }
 });
 
-test("enforces the result budget without emitting a partial success", async () => {
-  const fixture = await connect(async () => ({ text: "x".repeat(600) }), { resultBytes: 512 });
+test("returns JSON larger than the former MCP result budget", async () => {
+  const payload = { text: "x".repeat(6 * 1024 * 1024) };
+  const fixture = await connect(async () => payload);
   try {
     const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/OpenAI" } });
-    assert.equal(result.isError, true);
-    assert.equal(result.structuredContent, undefined);
-    assert.match(JSON.stringify(result.content), /INVALID_RESPONSE/);
+    assert.equal(result.isError, undefined);
+    assert.deepEqual(result.structuredContent, payload);
+    assert.deepEqual(result.content, [{ type: "text", text: JSON.stringify(payload) }]);
   } finally { await fixture.close(); }
 });
 
-test("deadline aborts the upstream request and reports TIMEOUT", async () => {
-  let aborted = false;
-  const fixture = await connect(async (_url, _options, context) => {
-    await new Promise<void>(resolve => context!.signal!.addEventListener("abort", () => { aborted = true; resolve(); }, { once: true }));
-    throw new FeedError("CANCELLED", "Cancelled.");
-  }, { timeoutMs: 25 });
-  try {
-    const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/OpenAI" } });
-    assert.equal(aborted, true);
-    assert.match(JSON.stringify(result.content), /TIMEOUT/);
-    assert.equal(result.structuredContent, undefined);
-  } finally { await fixture.close(); }
-});
-
-test("unexpected errors and cyclic non-Error throws survive tool serialization", async () => {
-  const cyclic: Record<string, unknown> = { detail: "original non-Error evidence", number: 10n };
+test("reports only code and message without traversing exceptions", async () => {
+  const cyclic: Record<string, unknown> = {};
   cyclic.self = cyclic;
   Object.defineProperty(cyclic, "getter", { get() { throw new Error("must not invoke"); } });
-  for (const error of [new FeedError("CANCELLED", "cancel evidence", { cause: new Error("abort evidence") }), new FeedError("TIMEOUT", "timeout evidence", { cause: new Error("deadline evidence") }), new TypeError("application exploded", { cause: new Error("root cause") }), cyclic, undefined]) {
+  for (const error of [new FeedError("CANCELLED", "cancel evidence", { cause: cyclic }), new TypeError("network evidence", { cause: cyclic }), cyclic, undefined]) {
     const fixture = await connect(async () => { throw error; });
     try {
-      const tool = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
-      assert.equal(tool.isError, true);
-      assert.equal(tool.structuredContent, undefined);
-      const data = JSON.parse((tool.content as { text: string }[])[0]!.text);
-      if (error instanceof Error) {
-        assert.equal(data.diagnostic.name, error.name);
-        assert.equal(data.diagnostic.stack, error.stack);
-        assert.equal(data.diagnostic.cause.message, (error.cause as Error).message);
-      } else if (error === cyclic) {
-        assert.match(data.diagnostic.self.omitted, /Cyclic/);
-        assert.match(data.diagnostic.getter.omitted, /Accessor/);
-      }
+      const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
+      assert.equal(result.isError, true);
+      assert.equal(result.structuredContent, undefined);
+      assert.deepEqual(result.content, [{ type: "text", text: JSON.stringify({
+        code: error instanceof FeedError ? error.code : "UPSTREAM",
+        message: error instanceof Error ? error.message : "Unexpected request failure.",
+      }) }]);
     } finally { await fixture.close(); }
   }
-});
-
-test("oversized failure diagnostics explicitly report truncation within the result budget", async () => {
-  const fixture = await connect(async () => { throw new Error("🧪".repeat(100_000)); }, { resultBytes: 4096 });
-  try {
-    const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
-    assert.equal(result.isError, true);
-    assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 4096);
-    assert.match(JSON.stringify(result), /omitted.*budget/);
-  } finally { await fixture.close(); }
 });

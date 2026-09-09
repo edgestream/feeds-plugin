@@ -14,12 +14,12 @@ and depends only on core, never CLI, MCP, runtime, or another provider.
   Do not validate or normalize posts, flatten groups, filter or deduplicate results,
   interpret body-level status codes, or translate/follow cursors.
 - Inject HTTP collaborators for deterministic tests.
-- Bound duration and response size; reject malformed JSON or a non-object response.
-- Report transport failures through `FeedError`, retaining original exceptions as
-  recursive causes and available HTTP endpoint/status/headers/body diagnostics.
-  Read error bodies before classification, including 404. Bound capture and mark
-  omissions/truncation explicitly; invalid UTF-8 bytes require lossless encoding.
-  Preserve underlying errors and abort reasons for timeout/cancellation.
+- Parse successful responses with the built-in `Response.json()` method and return
+  its result directly. Do not read streams, collect chunks, inspect response
+  headers, walk/validate the result, or impose time/byte limits.
+- Classify HTTP errors by status without reading their bodies. Preserve native
+  exceptions as causes in `FeedError` without traversing or serializing them.
+- Forward the caller's abort signal directly to fetch; do not create a deadline.
 - Do not silently retry, fall back, or discover providers.
 
 Platforms recognize public URLs. Providers own upstream endpoints and request
@@ -30,5 +30,4 @@ pages, continuation options, or aggregate traversal in the shared contract.
 Run `test/contracts/feedProviderContract.ts` for each provider along with adapter
 coverage of supported URLs/options, complete response preservation, malformed
 JSON, unsafe URLs, transport errors and cancellation. Tests require no live network.
-See the provider README for endpoint behavior and [MCP.md](MCP.md) for diagnostic
-serialization, including development evidence exposed to clients.
+See the provider README for endpoint behavior and [MCP.md](MCP.md) for the error response format.

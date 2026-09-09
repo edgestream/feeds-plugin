@@ -15,7 +15,7 @@ test("uses only the v2 status endpoint with headers and redirects disabled", asy
     assert.equal(url, `https://api.fxtwitter.com/2/status/1234567890123456789`);
     assert.equal(options?.redirect, "error");
     assert.equal(new Headers(options?.headers).get("Accept"), "application/json");
-    assert.ok(options?.signal);
+    assert.equal(options?.signal, undefined);
     return Response.json(payload);
   } });
   assert.deepEqual(await provider.get(ref), expected);
@@ -31,41 +31,45 @@ test("maps HTTP errors without retries", async () => {
     let calls = 0;
     await assert.rejects(new FxTwitterProvider({ fetch: async () => {
       calls++;
-      return new Response("failure", { status });
+      return { status, ok: false, get body() { return assert.fail("must not read error body"); }, json: async () => assert.fail("must not parse error body") } as unknown as Response;
     } }).get(ref), { code });
     assert.equal(calls, 1);
   }
 });
 
-test("rejects malformed or non-object JSON", async () => {
-  for (const body of ["{", "null", "[]", "123", '"text"']) {
-    await assert.rejects(new FxTwitterProvider({ fetch: async () => new Response(body) }).get(ref), { code: "INVALID_RESPONSE" });
-  }
+test("delegates parsing to response.json without inspecting the body or parsed result", async () => {
+  const result = new Proxy({}, { ownKeys: () => assert.fail("must not iterate result"), get: (_target, key) => {
+    if (key === "then") return undefined;
+    assert.fail("must not inspect result");
+  } });
+  let reads = 0;
+  const response = { status: 200, ok: true, json: async () => { reads++; return result; },
+    get body() { return assert.fail("must not read body stream"); },
+    get headers() { return assert.fail("must not inspect response headers"); } } as unknown as Response;
+  assert.equal(await new FxTwitterProvider({ fetch: async () => response }).get(ref), result);
+  assert.equal(reads, 1);
 });
 
-test("limits both declared and streamed response sizes", async () => {
-  for (const headers of [{}, { "content-length": "10000" }]) {
-    await assert.rejects(new FxTwitterProvider({ maxResponseBytes: 8, fetch: async () => new Response(JSON.stringify(payload), { headers }) }).get(ref), { code: "INVALID_RESPONSE" });
+test("uses native JSON parsing without response validation or byte limits", async () => {
+  for (const value of [null, [], 123, "text", { text: "x".repeat(6 * 1024 * 1024) }]) {
+    assert.deepEqual(await new FxTwitterProvider({ fetch: async () => Response.json(value) }).get(ref), value);
   }
+  await assert.rejects(new FxTwitterProvider({ fetch: async () => new Response("{") }).get(ref), { code: "INVALID_RESPONSE" });
 });
 
-test("reports network failure, timeout, and cancellation separately", async () => {
-  await assert.rejects(new FxTwitterProvider({ fetch: async () => { throw new TypeError("network"); } }).get(ref), { code: "UPSTREAM" });
-  const pendingFetch: typeof fetch = async (_url, options) => new Promise((_resolve, reject) => {
-    options?.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
-  });
-  await assert.rejects(new FxTwitterProvider({ fetch: pendingFetch, timeoutMs: 5 }).get(ref), { code: "TIMEOUT" });
+test("reports network failure and forwards caller cancellation directly", async () => {
+  const original = new TypeError("network");
+  await assert.rejects(new FxTwitterProvider({ fetch: async () => { throw original; } }).get(ref), { code: "UPSTREAM", cause: original });
   const controller = new AbortController();
+  const pendingFetch: typeof fetch = async (_url, options) => {
+    assert.equal(options?.signal, controller.signal);
+    return new Promise((_resolve, reject) => {
+      options!.signal!.addEventListener("abort", () => reject(controller.signal.reason), { once: true });
+    });
+  };
   const request = new FxTwitterProvider({ fetch: pendingFetch }).get(ref, {}, { signal: controller.signal });
   controller.abort();
-  await assert.rejects(request, { code: "CANCELLED" });
-});
-
-test("timeout covers a stalled response body", async () => {
-  const provider = new FxTwitterProvider({ timeoutMs: 5, fetch: async (_url, options) => new Response(new ReadableStream({
-    start(controller) { options?.signal?.addEventListener("abort", () => controller.error(new Error("aborted")), { once: true }); },
-  })) });
-  await assert.rejects(provider.get(ref), { code: "TIMEOUT" });
+  await assert.rejects(request, { code: "CANCELLED", cause: controller.signal.reason });
 });
 
 test("selects one endpoint and preserves envelopes, duplicates, groups and unknown structures", async () => {
@@ -98,32 +102,4 @@ test("returns empty successful objects unchanged and treats HTTP 404 consistentl
   for (const options of [{ context: true }, { answers: true }]) {
     await assert.rejects(new FxTwitterProvider({ fetch: async () => assert.fail("must not fetch") }).get(new URL("https://x.com/alice"), options), { code: "INVALID_INPUT" });
   }
-});
-
-test("retains received bytes, original causes and abort reasons", async () => {
-  const original = new TypeError("transport evidence", { cause: new Error("socket evidence") });
-  await assert.rejects(new FxTwitterProvider({ fetch: async () => { throw original; } }).get(ref), (error: any) => {
-    assert.equal(error.cause, original);
-    assert.equal(error.diagnostics.endpoint, `https://api.fxtwitter.com/2/status/1234567890123456789`);
-    return true;
-  });
-  for (const cancelled of [false, true]) {
-    const controller = new AbortController();
-    const reason = new Error("caller evidence");
-    const provider = new FxTwitterProvider({ timeoutMs: 5, fetch: async (_url, options) => new Promise((_resolve, reject) => {
-      options!.signal!.addEventListener("abort", () => reject(original), { once: true });
-      if (cancelled) controller.abort(reason);
-    }) });
-    await assert.rejects(provider.get(ref, {}, { signal: controller.signal }), (error: any) => {
-      assert.equal(error.code, cancelled ? "CANCELLED" : "TIMEOUT");
-      assert.equal(error.cause, original);
-      if (cancelled) assert.equal(error.diagnostics.abortReason, reason);
-      return true;
-    });
-  }
-  await assert.rejects(new FxTwitterProvider({ maxResponseBytes: 4, fetch: async () => new Response("12345678") }).get(ref), (error: any) => {
-    assert.equal(error.diagnostics.body, "1234");
-    assert.match(error.diagnostics.bodyTruncated, /4 bytes/);
-    return true;
-  });
 });

@@ -36,15 +36,12 @@ async function installed() {
   }
   await mkdir(join(directory, "dist"));
   for (const name of ["feeds-mcp.mjs", "feeds-mcp-http.mjs"]) await copyFile(join(root, "dist", name), join(directory, "dist", name));
-  await writeFile(join(directory, "fetch.mjs"), `const originalTimeout = globalThis.setTimeout;
-  globalThis.setTimeout = (fn, ms, ...args) => originalTimeout(fn, ms === 20000 ? 10 : ms, ...args);
-  globalThis.fetch = async (url, options) => {
+  await writeFile(join(directory, "fetch.mjs"), `globalThis.fetch = async (url, options) => {
     const id = String(url).split('/').pop();
     if (['404', '429', '500'].includes(id)) return new Response('diagnostic body ' + id, { status: Number(id), headers: { 'x-evidence': 'upstream-header' } });
     if (id === '501') throw new TypeError('network evidence', { cause: new Error('socket evidence') });
     if (id === '502') return new Response('{malformed');
     if (id === '503') return new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('partial evidence')); }, pull(c) { c.error(new Error('body read evidence', { cause: new Error('stream cause') })); } }));
-    if (id === '505') return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(new Error('timeout transport evidence')), { once: true }));
     if (id === '504') return new Response(new Uint8Array([255]));
     if (String(url) !== 'https://api.fxtwitter.com/2/status/123') throw new Error('Unexpected upstream URL');
     return Response.json({status:{id:'123',text:'bundle fixture'}});
@@ -71,17 +68,14 @@ async function verify(client: Client) {
   const result = await client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
   assert.equal(result.isError, undefined);
   assert.deepEqual(result.structuredContent, { status: { id: "123", text: "bundle fixture" } });
-  for (const [id, evidence] of [["404", "diagnostic body 404"], ["429", "diagnostic body 429"], ["500", "diagnostic body 500"], ["501", "socket evidence"], ["502", "SyntaxError"], ["503", "stream cause"], ["504", "TypeError"], ["505", "timeout transport evidence"]]) {
+  for (const [id, evidence] of [["404", "NOT_FOUND"], ["429", "RATE_LIMITED"], ["500", "UPSTREAM"], ["501", "UPSTREAM"], ["502", "INVALID_RESPONSE"], ["503", "UPSTREAM"], ["504", "INVALID_RESPONSE"]]) {
     const failed = await client.callTool({ name: "get_feed", arguments: { source: `https://x.com/a/status/${id}` } });
     assert.equal(failed.isError, true);
     assert.equal(failed.structuredContent, undefined);
     const data = JSON.parse((failed.content as { text: string }[])[0]!.text);
-    assert.match(JSON.stringify(data), new RegExp(evidence!));
-    assert.match(JSON.stringify(data), /https:\/\/api.fxtwitter.com\/2\/status\//);
-    if (["404", "429", "500"].includes(id!)) {
-      assert.equal(data.diagnostic.diagnostics.status, Number(id));
-      assert.equal(data.diagnostic.diagnostics.headers["x-evidence"], "upstream-header");
-    }
+    assert.equal(data.code, evidence);
+    assert.equal(typeof data.message, "string");
+    assert.deepEqual(Object.keys(data).sort(), ["code", "message"]);
   }
 }
 

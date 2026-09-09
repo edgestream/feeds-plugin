@@ -19,13 +19,11 @@ export type JsonValue = null | boolean | number | string | JsonValue[] | JsonObj
 export interface JsonObject { [key: string]: JsonValue }
 
 export type ErrorCode = "INVALID_INPUT" | "CONFIGURATION" | "NOT_FOUND" |
-  "RATE_LIMITED" | "UPSTREAM" | "INVALID_RESPONSE" | "TIMEOUT" | "CANCELLED";
+  "RATE_LIMITED" | "UPSTREAM" | "INVALID_RESPONSE" | "CANCELLED";
 
 export class FeedError extends Error {
-  readonly diagnostics?: unknown;
-  constructor(readonly code: ErrorCode, message: string, options?: ErrorOptions & { diagnostics?: unknown }) {
+  constructor(readonly code: ErrorCode, message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = "FeedError";
-    this.diagnostics = options?.diagnostics;
   }
 }

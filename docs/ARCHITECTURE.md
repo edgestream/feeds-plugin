@@ -42,7 +42,10 @@ results, duplicates, unknown fields, and any upstream cursor fields. There is no
 post model, identity/parent normalization, filtering, deduplication, page traversal,
 continuation API, or resource URI. Only complete public URLs are accepted.
 JSON parsing/serialization preserves JSON values, not original bytes or whitespace;
-standard JavaScript numeric precision limits apply.
+standard JavaScript numeric precision limits apply. Providers use built-in
+`Response.json()`; MCP uses `JSON.stringify()` and forwards structured content.
+There is no response traversal, output-schema validation, custom deadline, byte
+budget or recursive diagnostic serializer. HTTP status checks do not read the body.
 
 This contract replaces the previous normalized feed/page model. Consumers now
 interpret the upstream response directly. The CLI pretty-prints that response;
@@ -55,7 +58,7 @@ contract. Register them explicitly in runtime. Runtime selects one provider per
 platform. Provider replacement may change the returned JSON structure.
 
 Adapter tests inject HTTP responses and cover complete response preservation,
-endpoint selection, malformed JSON, unsafe URLs, transport limits and cancellation.
+endpoint selection, malformed JSON, unsafe URLs, native parsing and cancellation.
 Run the reusable provider contract in `test/contracts/feedProviderContract.ts`.
 CLI and MCP tests verify the same raw result, removed input options, and error
 behavior. Packaging tests invoke the committed bundles from isolated installations

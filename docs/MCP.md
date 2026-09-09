@@ -72,37 +72,28 @@ continuation. Clients interpret the provider's response directly, including any
 body-level error codes in HTTP-success responses.
 
 The server exposes no resources, resource links or resource templates. The tool
-advertises a generic JSON-object output schema and read-only, non-destructive,
-idempotent and open-world annotations. Retrieved content is untrusted data.
+advertises read-only, non-destructive, idempotent and open-world annotations.
+There is no output schema or recursive response validation. Retrieved content is untrusted data.
 There is no search, writing, media download, cache, subscription or background
 refresh, and no upstream availability or completeness guarantee.
 
 The companion [URL routing skill](PLUGIN.md#url-routing-skill) calls this tool with
 the original public URL. A standalone MCP connection does not install the skill.
 
-## Bounds, cancellation, errors
+## Response handling, cancellation, errors
 
-MCP requests have a 60-second deadline and a 10-MiB result budget, including both
-text and structured content. Oversized results fail instead of returning partial
-data. Cancellation propagates to upstream HTTP. A deadline reports `TIMEOUT`;
-caller cancellation reports `CANCELLED`. Provider duration/response limits apply too.
+The adapter places the provider result directly in structured content and uses
+`JSON.stringify()` for the text block. It does not traverse, validate, measure or
+truncate responses. There are no application deadlines or response byte budgets;
+Node and MCP client/SDK transport behavior still applies. The caller's signal is
+passed through to the provider and fetch.
 
-Tool failures return `isError: true` and one JSON text block `{ code, diagnostic }`,
+Tool failures return `isError: true` and one JSON text block `{ code, message }`,
 without successful structured content. Input validation rejects unsupported
-parameters. Input errors include public URL examples. Original exceptions retain
-names, messages, stacks, recursive causes and available HTTP endpoint/status/
-headers/body diagnostics, without a debug flag. Unexpected throws retain their
-evidence too. This intentionally exposes local paths and upstream content to
-clients; treat diagnostic content as untrusted data. No retries or fallback occur.
-
-Diagnostic serialization retains own properties and Error names/messages/stacks/causes,
-including non-Error throws. Unsupported primitive types are tagged. Cycles/repeated
-references, unevaluated accessors (except Error.stack), inspection failures, and
-limits are explicit `omitted` markers. Traversal is limited to 32 levels, 10,000
-values and 6 Mi UTF-16 code units. If the escaped diagnostic exceeds the result
-budget (128 bytes reserved for wrapping), clients receive a serialized prefix and
-an explicit omission marker. Injected result budgets must be at least 512 bytes so failure envelopes fit;
-the default remains 10 MiB. Failures never contain successful structured content.
+parameters. The adapter reads only the error code and message; it does not traverse
+exceptions or serialize stacks, causes, response headers or bodies. Non-Error
+throws receive `UPSTREAM` with a generic message. No retries or fallback occur.
+This replaces the previous recursive `{ code, diagnostic }` error format.
 
 ## Transports
 
@@ -141,7 +132,8 @@ for connection setup and actual tool-call verification.
 ## Verification and remaining deployment work
 
 Tests cover URL routing, unchanged response content, rejection of removed inputs,
-in-memory tool discovery/calls, error mapping, limits, and real loopback HTTP.
+in-memory tool discovery/calls, large unchanged responses, simple error messages,
+caller cancellation, and real loopback HTTP.
 Packaging tests copy both bundles outside the repository without `node_modules`,
 then initialize clients, discover the tool and retrieve injected upstream
 data. No automated test requires live X/fxTwitter access.
