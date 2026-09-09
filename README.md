@@ -12,7 +12,7 @@ npx feeds show --context 'https://x.com/OpenAI/status/2082577277246972300'
 npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
 ```
 
-Read an authors feed:
+Read an author's feed:
 
 ```bash
 npx feeds show 'https://x.com/OpenAI'
