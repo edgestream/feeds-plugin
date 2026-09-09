@@ -1,7 +1,5 @@
 # Feeds Plugin
 
-Read social media feeds and return the complete upstream JSON response.
-
 ## MCP
 
 For the quickest setup, install **Feeds Dev** from our marketplace in the
