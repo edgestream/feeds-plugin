@@ -16,6 +16,13 @@ test("local npx executes the committed bundle and returns the complete upstream 
     const preload = join(directory, "fetch.mjs");
     await writeFile(preload, `import assert from 'node:assert/strict';
 globalThis.fetch = async (url, options) => {
+  if (String(url).includes('/profile/')) {
+    const parsed = new URL(url);
+    assert.equal(parsed.origin + parsed.pathname, 'https://api.fxtwitter.com/2/profile/alice/statuses');
+    assert.equal(parsed.searchParams.get('with_replies'), '1');
+    assert.equal(parsed.searchParams.get('cursor'), 'next+/=&x=1#%');
+    return Response.json({ results: [{ id: 'reply', replying_to: { status: '123' } }], cursor: null });
+  }
   assert.equal(url, 'https://api.fxtwitter.com/2/status/123');
   assert.equal(options.redirect, 'error');
   return Response.json({ status: { id: '123', text: 'Hello 🌍', unknown: [null, 42] } });
@@ -24,6 +31,9 @@ globalThis.fetch = async (url, options) => {
     const result = await exec("npx", ["--no-install", "feeds", "show", "https://x.com/alice/status/123"], { cwd: root, env });
     assert.deepEqual(JSON.parse(result.stdout), { status: { id: "123", text: "Hello 🌍", unknown: [null, 42] } });
     assert.equal(result.stderr, "");
+    const replies = await exec(process.execPath, [join(root, "dist/feeds-cli.mjs"), "show", "--answers", "--cursor", "next+/=&x=1#%", "https://x.com/ALICE"], { env });
+    assert.deepEqual(JSON.parse(replies.stdout), { results: [{ id: "reply", replying_to: { status: "123" } }], cursor: null });
+    assert.equal(replies.stderr, "");
     await assert.rejects(exec(process.execPath, [join(root, "dist/feeds-cli.mjs"), "show", "123"], { env }), (error: unknown) => {
       const failure = error as { code: number; stdout: string; stderr: string };
       assert.equal(failure.code, 2);

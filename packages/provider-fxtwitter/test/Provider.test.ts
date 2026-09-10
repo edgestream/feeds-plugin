@@ -82,6 +82,8 @@ test("selects one endpoint and preserves envelopes, duplicates, groups and unkno
     ["https://twitter.com/i/web/status/30", { answers: true }, "conversation/30"],
     ["https://x.com/alice/status/30", { context: true, answers: true }, "conversation/30"],
     ["https://x.com/ALICE?cursor=ignored", {}, "profile/alice/statuses"],
+    ["https://x.com/ALICE?with_replies=1", { answers: false }, "profile/alice/statuses"],
+    ["https://x.com/ALICE?with_replies=0#ignored", { answers: true }, "profile/alice/statuses?with_replies=1"],
   ] as const) {
     let calls = 0;
     const provider = new FxTwitterProvider({ fetch: async url => {
@@ -99,7 +101,7 @@ test("returns empty successful objects unchanged and treats HTTP 404 consistentl
     assert.deepEqual(await new FxTwitterProvider({ fetch: async () => Response.json(payload) }).get(new URL("https://x.com/alice")), payload);
   }
   await assert.rejects(new FxTwitterProvider({ fetch: async () => Response.json({ results: [] }, { status: 404 }) }).get(new URL("https://x.com/alice")), { code: "NOT_FOUND" });
-  for (const options of [{ context: true }, { answers: true }]) {
+  for (const options of [{ context: true }, { context: true, answers: true }]) {
     await assert.rejects(new FxTwitterProvider({ fetch: async () => assert.fail("must not fetch") }).get(new URL("https://x.com/alice"), options), { code: "INVALID_INPUT" });
   }
 });
@@ -153,8 +155,31 @@ test("continues author statuses with an encoded cursor and preserves duplicate e
   assert.deepEqual(await provider.get(source), pages[0]);
   assert.deepEqual(await provider.get(source, { cursor }), pages[1]);
   assert.equal(calls, 2);
-  for (const options of [{ cursor, answers: true }, { cursor, context: true }]) {
+  for (const options of [{ cursor, context: true }, { cursor, context: true, answers: true }]) {
     await assert.rejects(provider.get(source, options), { code: "INVALID_INPUT" });
   }
+  assert.equal(calls, 2);
+});
+
+test("continues authored replies without filtering mixed timeline results", async () => {
+  const cursor = "next+/=&with_replies=0#% ü";
+  const reply = { id: "2", replying_to: { status: "1" } };
+  const pages = [
+    { results: [{ id: "1" }, reply, reply, { type: "thread", statuses: [reply] }], cursor: { bottom: cursor }, extra: true },
+    { results: [], cursor: { bottom: "more" } },
+  ];
+  let calls = 0;
+  const provider = new FxTwitterProvider({ fetch: async input => {
+    const url = new URL(String(input));
+    assert.equal(url.origin + url.pathname, "https://api.fxtwitter.com/2/profile/alice/statuses");
+    assert.deepEqual([...url.searchParams], [["with_replies", "1"], ...(calls ? [["cursor", cursor]] : [])]);
+    return Response.json(pages[calls++]);
+  } });
+  const source = new URL("https://x.com/ALICE?cursor=ignored");
+  assert.deepEqual(await provider.get(source, { answers: true }), pages[0]);
+  assert.deepEqual(await provider.get(source, { answers: true, cursor }), pages[1]);
+  assert.equal(calls, 2);
+  await assert.rejects(provider.get(source, { answers: true, cursor: "" }), { code: "INVALID_INPUT" });
+  await assert.rejects(provider.get(new URL("https://x.com.evil.test/alice"), { answers: true }), { code: "INVALID_INPUT" });
   assert.equal(calls, 2);
 });

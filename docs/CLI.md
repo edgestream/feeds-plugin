@@ -23,7 +23,10 @@ npx feeds show 'https://x.com/OpenAI'
 
 Options may precede or follow the URL. `--context` selects the thread endpoint;
 `--answers` selects the conversation endpoint and takes precedence when both are
-set. Both require a post URL. A profile URL reads the upstream author's timeline.
+set for posts. `--context` requires a post URL. A profile URL reads the upstream
+author's timeline; `--answers` includes replies written by that author using
+`with_replies=1`. This is a mixed timeline, not replies-only or replies received
+from others. Profile `--context` is rejected even alongside `--answers`.
 Each call makes one request and returns the entire response without local filtering.
 The upstream defaults determine the amount and scope of returned data.
 Use `--cursor` with `--answers` and the same post URL to continue a conversation:
@@ -33,10 +36,11 @@ npx feeds show --answers --cursor '<cursor.bottom>' 'https://x.com/OpenAI/status
 ```
 
 Copy the nonempty `cursor.bottom` value from the previous JSON response unchanged.
-For an author feed, omit `--answers`:
+For an author feed, retain the same `--answers` setting as the first page:
 
 ```bash
 npx feeds show --cursor '<cursor.bottom>' 'https://x.com/OpenAI'
+npx feeds show --answers --cursor '<cursor.bottom>' 'https://x.com/OpenAI'
 ```
 
 Each invocation makes one request. Context-only post cursors are rejected;

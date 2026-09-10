@@ -57,8 +57,10 @@ stdio and stateless Streamable HTTP using the MCP TypeScript SDK and Zod.
 `get_feed(source, context?, answers?, cursor?)` accepts a complete public post or profile URL.
 Bare handles, IDs and internal URIs are unsupported. The optional booleans select
 upstream endpoints: `context` selects a thread, `answers` a conversation and takes
-precedence when both are true. Both require a post URL. Profile URLs retrieve the
-author's feed using upstream defaults. See [CLI.md](CLI.md) for supported URL forms.
+precedence when both are true for a post. Profile URLs retrieve the author's feed;
+`answers: true` includes replies written by that author via `with_replies=1`.
+The result is a mixed timeline, not replies-only or replies received from others.
+Profile `context: true` is rejected regardless of `answers`. See [CLI.md](CLI.md) for supported URL forms.
 
 Each call makes one upstream request. Successful results contain:
 
@@ -72,7 +74,9 @@ Pass the previous profile or conversation response's `cursor.bottom` unchanged w
 source and options to request another page. Cursorless calls refresh the first page.
 For example: `get_feed({source: "https://x.com/OpenAI/status/2082577277246972300", answers: true, cursor: "<cursor.bottom>"})`.
 For profiles, use `get_feed({source: "https://x.com/OpenAI", cursor: "<cursor.bottom>"})`
-without context/answers flags. Context-only post continuation is unsupported. Live conversation continuation currently reproduces an upstream 404
+without `context`. To include authored replies, use
+`get_feed({source: "https://x.com/OpenAI", answers: true})` and retain
+`answers: true` when passing the returned cursor on subsequent calls. Context-only post continuation is unsupported. Live conversation continuation currently reproduces an upstream 404
 even with fresh cursors; see the [recorded provider limitation](../packages/provider-fxtwitter/README.md#confirmed-live-continuation-failure-2026-09-10). Preserve continuation
 information in summaries; a returned cursor means further retrieval can be attempted,
 and neither its absence nor a reply counter proves complete coverage.

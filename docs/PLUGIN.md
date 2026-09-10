@@ -51,7 +51,9 @@ MCP connection alone does not install the companion skill.
 
 The skill routes retrieval requests containing `https://x.com` URLs through the
 installed Feeds `get_feed` before generic web retrieval. It passes the original
-URL as `source` without additional parameters; the plugin handles validation and
+URL as `source` for plain retrieval; explicit requests for replies written by an
+author add `answers: true` to the profile request. Continuation retains source
+and options and forwards `cursor.bottom`. The plugin handles validation and
 resolves profile and post links. The platform's broader URL support is unchanged.
 Explicit user tool choices and URLs merely quoted for editing remain outside
 implicit retrieval.
