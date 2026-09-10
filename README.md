@@ -2,7 +2,9 @@
 
 ## MCP
 
-For the quickest setup, install **Feeds Dev** from our marketplace in the
+- Node.js 24 or later is required
+
+For the quickest setup, install **Feeds Plugin** from our marketplace in the
 ChatGPT desktop app. Codex users can run:
 
 ```bash
@@ -10,8 +12,7 @@ codex plugin marketplace add edgestream/agent-marketplace --ref development
 codex plugin add feeds-dev@edgestream-dev
 ```
 
-Node.js 24 or later is required. See [MCP.md](docs/MCP.md#get-started) for
-full setup and a local checkout MCP alternative.
+See [MCP.md](docs/MCP.md#get-started) for full setup.
 
 ## CLI
 
