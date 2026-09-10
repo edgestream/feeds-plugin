@@ -6,6 +6,7 @@ export interface Platform {
 export interface FeedOptions {
   readonly context?: boolean;
   readonly answers?: boolean;
+  readonly cursor?: string;
 }
 export interface FeedProvider {
   readonly id: string;

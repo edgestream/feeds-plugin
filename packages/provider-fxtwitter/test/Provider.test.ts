@@ -103,3 +103,58 @@ test("returns empty successful objects unchanged and treats HTTP 404 consistentl
     await assert.rejects(new FxTwitterProvider({ fetch: async () => assert.fail("must not fetch") }).get(new URL("https://x.com/alice"), options), { code: "INVALID_INPUT" });
   }
 });
+
+test("continues conversations with an opaque cursor and preserves each complete response", async () => {
+  const cursor = "next+/=&ranking_mode=recency#% ü";
+  const pages = [
+    { replies: [{ id: "31" }], cursor: { bottom: cursor }, extra: [null, true] },
+    { replies: [{ id: "32" }, { id: "32" }], cursor: null, extra: { preserved: true } },
+  ];
+  let calls = 0;
+  const provider = new FxTwitterProvider({ fetch: async input => {
+    const url = new URL(String(input));
+    assert.equal(url.origin + url.pathname, "https://api.fxtwitter.com/2/conversation/1234567890123456789");
+    assert.deepEqual([...url.searchParams], calls ? [["cursor", cursor]] : []);
+    return Response.json(pages[calls++]);
+  } });
+  assert.deepEqual(await provider.get(ref, { answers: true }), pages[0]);
+  assert.deepEqual(await provider.get(ref, { answers: true, context: true, cursor }), pages[1]);
+  assert.equal(calls, 2);
+});
+
+test("rejects malformed cursors and unsupported cursor endpoints before HTTP", async () => {
+  const provider = new FxTwitterProvider({ fetch: async () => assert.fail("must not fetch") });
+  for (const options of [{ cursor: "next" }, { context: true, cursor: "next" }, { answers: true, cursor: "" }, { answers: true, cursor: 42 as unknown as string }]) {
+    await assert.rejects(provider.get(ref, options), { code: "INVALID_INPUT" });
+  }
+  await assert.rejects(provider.get(new URL("https://x.com/alice"), { cursor: "" }), { code: "INVALID_INPUT" });
+});
+
+test("continuation retains empty pages, body-level errors and HTTP failures", async () => {
+  for (const payload of [{ replies: [], cursor: { bottom: "more" } }, { replies: [], cursor: null }, { code: 404, message: "unavailable" }]) {
+    const provider = new FxTwitterProvider({ fetch: async () => Response.json(payload) });
+    assert.deepEqual(await provider.get(ref, { answers: true, cursor: "next" }), payload);
+  }
+  const provider = new FxTwitterProvider({ fetch: async () => new Response(null, { status: 404 }) });
+  await assert.rejects(provider.get(ref, { answers: true, cursor: "next" }), { code: "NOT_FOUND" });
+});
+
+test("continues author statuses with an encoded cursor and preserves duplicate entries", async () => {
+  const cursor = "next+/=&count=1#%";
+  const pages = [{ results: [{ id: "1" }], cursor: { bottom: cursor } }, { results: [{ id: "1" }, { id: "2" }], cursor: null }];
+  let calls = 0;
+  const provider = new FxTwitterProvider({ fetch: async input => {
+    const url = new URL(String(input));
+    assert.equal(url.origin + url.pathname, "https://api.fxtwitter.com/2/profile/openai/statuses");
+    assert.deepEqual([...url.searchParams], calls ? [["cursor", cursor]] : []);
+    return Response.json(pages[calls++]);
+  } });
+  const source = new URL("https://x.com/OpenAI?cursor=ignored");
+  assert.deepEqual(await provider.get(source), pages[0]);
+  assert.deepEqual(await provider.get(source, { cursor }), pages[1]);
+  assert.equal(calls, 2);
+  for (const options of [{ cursor, answers: true }, { cursor, context: true }]) {
+    await assert.rejects(provider.get(source, options), { code: "INVALID_INPUT" });
+  }
+  assert.equal(calls, 2);
+});

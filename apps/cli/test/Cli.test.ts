@@ -47,3 +47,17 @@ test("parses endpoint options before or after the URL and forwards cancellation"
     assert.equal(await runCli(args, () => assert.fail(), { stdout: () => assert.fail(), stderr: () => {} }), 2);
   }
 });
+
+test("forwards a cursor before or after the URL without changing its value", async () => {
+  const cursor = "next+/=&x=1#%";
+  for (const args of [["show", "--answers", "--cursor", cursor, "url"], ["show", "url", "--cursor", cursor, "--answers"]]) {
+    assert.equal(await runCli(args, () => ({ show: async (url, options) => {
+      assert.equal(url, "url");
+      assert.deepEqual(options, { context: false, answers: true, cursor });
+      return {};
+    } }), { stdout: () => {}, stderr: () => assert.fail() }), 0);
+  }
+  for (const args of [["show", "url", "--cursor", ""], ["show", "url", "--cursor", "--answers"], ["show", "url", "--cursor", "one", "--cursor", "two"]]) {
+    assert.equal(await runCli(args, () => assert.fail(), { stdout: () => assert.fail(), stderr: () => {} }), 2);
+  }
+});

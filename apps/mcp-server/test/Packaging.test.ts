@@ -37,6 +37,12 @@ async function installed() {
   await mkdir(join(directory, "dist"));
   for (const name of ["feeds-mcp.mjs", "feeds-mcp-http.mjs"]) await copyFile(join(root, "dist", name), join(directory, "dist", name));
   await writeFile(join(directory, "fetch.mjs"), `globalThis.fetch = async (url, options) => {
+    const parsed = new URL(url);
+    if (parsed.pathname === '/2/conversation/123' || parsed.pathname === '/2/profile/openai/statuses') {
+      const cursor = parsed.searchParams.get('cursor');
+      if (cursor !== null && cursor !== 'next+/=&x=1#%') throw new Error('Unexpected cursor');
+      return Response.json({ [parsed.pathname.includes('/profile/') ? 'results' : 'replies']: [{ id: cursor === null ? '1' : '2' }], cursor: cursor === null ? { bottom: 'next+/=&x=1#%' } : null });
+    }
     const id = String(url).split('/').pop();
     if (['404', '429', '500'].includes(id)) return new Response('diagnostic body ' + id, { status: Number(id), headers: { 'x-evidence': 'upstream-header' } });
     if (id === '501') throw new TypeError('network evidence', { cause: new Error('socket evidence') });
@@ -65,6 +71,21 @@ test("installed portable and Codex layouts discover the same companion skill", a
 async function verify(client: Client) {
   assert.deepEqual((await client.listTools()).tools.map(t => t.name), ["get_feed"]);
   assert.equal(client.getServerCapabilities()?.resources, undefined);
+  assert.ok((await client.listTools()).tools[0]!.inputSchema.properties?.cursor);
+  const source = "https://x.com/a/status/123";
+  const first = await client.callTool({ name: "get_feed", arguments: { source, answers: true } });
+  assert.equal(first.isError, undefined);
+  assert.deepEqual(first.structuredContent, { replies: [{ id: "1" }], cursor: { bottom: "next+/=&x=1#%" } });
+  const next = await client.callTool({ name: "get_feed", arguments: { source, answers: true, cursor: (first.structuredContent as { cursor: { bottom: string } }).cursor.bottom } });
+  assert.equal(next.isError, undefined);
+  assert.deepEqual(next.structuredContent, { replies: [{ id: "2" }], cursor: null });
+  const profile = "https://x.com/OpenAI";
+  const authorFirst = await client.callTool({ name: "get_feed", arguments: { source: profile } });
+  assert.equal(authorFirst.isError, undefined);
+  assert.deepEqual(authorFirst.structuredContent, { results: [{ id: "1" }], cursor: { bottom: "next+/=&x=1#%" } });
+  const authorNext = await client.callTool({ name: "get_feed", arguments: { source: profile, cursor: (authorFirst.structuredContent as { cursor: { bottom: string } }).cursor.bottom } });
+  assert.equal(authorNext.isError, undefined);
+  assert.deepEqual(authorNext.structuredContent, { results: [{ id: "2" }], cursor: null });
   const result = await client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
   assert.equal(result.isError, undefined);
   assert.deepEqual(result.structuredContent, { status: { id: "123", text: "bundle fixture" } });

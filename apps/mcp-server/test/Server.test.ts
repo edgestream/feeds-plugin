@@ -30,7 +30,7 @@ test("advertises only a URL tool and returns complete provider JSON without reso
     assert.deepEqual(tools.map(tool => tool.name), ["get_feed"]);
     assert.equal(tools[0]?.annotations?.readOnlyHint, true);
     assert.equal(tools[0]?.outputSchema, undefined);
-    assert.deepEqual(Object.keys(tools[0]!.inputSchema.properties!), ["source", "context", "answers"]);
+    assert.deepEqual(Object.keys(tools[0]!.inputSchema.properties!), ["source", "context", "answers", "cursor"]);
     assert.equal(fixture.client.getServerCapabilities()?.resources, undefined);
     const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123", context: true, answers: true } });
     assert.equal(result.isError, undefined);
@@ -49,7 +49,7 @@ test("rejects references and removed page options before provider access", async
       assert.equal(result.isError, true, source);
       assert.match(JSON.stringify(result.content), /INVALID_INPUT/);
     }
-    for (const option of [{ all: true }, { cursor: "next" }, { limit: 25 }]) {
+    for (const option of [{ all: true }, { cursor: "" }, { cursor: 42 }, { limit: 25 }]) {
       const result = await fixture.client.callTool({ name: "get_feed", arguments: { source: "https://x.com/OpenAI", ...option } });
       assert.equal(result.isError, true);
     }
@@ -84,4 +84,27 @@ test("reports only code and message without traversing exceptions", async () => 
       }) }]);
     } finally { await fixture.close(); }
   }
+});
+
+test("forwards the conversation cursor through MCP and application without changing responses", async () => {
+  const cursor = "next+/=&x=1#%";
+  const first = { replies: [{ id: "1" }], cursor: { bottom: cursor } };
+  const second = { replies: [{ id: "2" }], cursor: null };
+  let calls = 0;
+  const fixture = await connect(async (url, options) => {
+    assert.equal(url.href, "https://x.com/a/status/123");
+    assert.deepEqual(options, { context: false, answers: true, ...(calls ? { cursor } : {}) });
+    return calls++ ? second : first;
+  });
+  try {
+    const source = "https://x.com/a/status/123";
+    const page = await fixture.client.callTool({ name: "get_feed", arguments: { source, answers: true } });
+    assert.equal(page.isError, undefined);
+    assert.deepEqual(page.structuredContent, first);
+    const next = await fixture.client.callTool({ name: "get_feed", arguments: { source, answers: true, cursor: (page.structuredContent as typeof first).cursor.bottom } });
+    assert.equal(next.isError, undefined);
+    assert.deepEqual(next.structuredContent, second);
+    assert.deepEqual(next.content, [{ type: "text", text: JSON.stringify(second) }]);
+    assert.equal(calls, 2);
+  } finally { await fixture.close(); }
 });

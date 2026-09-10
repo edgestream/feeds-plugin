@@ -23,11 +23,15 @@ npx feeds show --context 'https://x.com/OpenAI/status/2082577277246972300'
 npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
 ```
 
-Read an author's feed:
+Read an author's feed and continue using its returned `cursor.bottom`:
 
 ```bash
 npx feeds show 'https://x.com/OpenAI'
+npx feeds show --cursor '<cursor.bottom>' 'https://x.com/OpenAI'
 ```
+
+For another page of replies, pass the returned `cursor.bottom` with
+`--answers --cursor '<cursor.bottom>'`. See [CLI.md](docs/CLI.md) for details.
 
 ## Development
 
