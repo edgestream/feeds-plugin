@@ -15,9 +15,8 @@ connection.
 4. Start a new chat and ask, for example: “Read the feed at
    `https://x.com/OpenAI`.”
 
-The plugin contributes both the Feeds MCP tool and its X-URL routing skill. The
-skill can select Feeds for retrieval requests that contain an `https://x.com`
-URL. In other requests, explicitly ask ChatGPT to use Feeds.
+The plugin also installs the [read-x skill](SKILL.md). For explicit retrieval,
+ask ChatGPT to use Feeds.
 
 ### Codex CLI
 
@@ -46,12 +45,6 @@ codex mcp get feeds
 This standalone configuration provides the MCP server but not the plugin’s URL
 routing skill.
 
-## Architecture
-
-`apps/mcp-server` is a thin adapter over `FeedService`. Runtime composes platforms,
-providers and service. `createFeedsMcpServer({ feeds })` exposes the same tool over
-stdio and stateless Streamable HTTP using the MCP TypeScript SDK and Zod.
-
 ## Tool
 
 `get_feed(source, context?, answers?, cursor?)` accepts a complete public post or profile URL.
@@ -67,9 +60,8 @@ Each call makes one upstream request. Successful results contain:
 - `structuredContent`: the complete upstream JSON object;
 - one text content block containing that same JSON.
 
-The response has no added wrapper, post schema or metadata. Envelope fields,
-grouped results, duplicate entries, unknown fields and upstream cursor fields are
-preserved. The optional nonempty `cursor` accepts a profile URL or a post URL with `answers: true`.
+The response follows the shared [response semantics](PROVIDER.md#response-semantics).
+The optional nonempty `cursor` accepts a profile URL or a post URL with `answers: true`.
 Pass the previous profile or conversation response's `cursor.bottom` unchanged with the same
 source and options to request another page. Cursorless calls refresh the first page.
 For example: `get_feed({source: "https://x.com/OpenAI/status/2082577277246972300", answers: true, cursor: "<cursor.bottom>"})`.
@@ -77,21 +69,13 @@ For profiles, use `get_feed({source: "https://x.com/OpenAI", cursor: "<cursor.bo
 with the same options used for the first page. To include authored replies, use
 `get_feed({source: "https://x.com/OpenAI", answers: true})` and retain
 `answers: true` when passing the returned cursor on subsequent calls.
-Preserve continuation information in summaries; a returned cursor means further
-retrieval can be attempted, and neither its absence nor a reply counter proves
-complete coverage.
-There are no aggregate page options, local filtering, deduplication or automatic
-continuation. Clients interpret the provider's response directly, including any
-body-level error codes in HTTP-success responses.
 
 The server exposes no resources, resource links or resource templates. The tool
 advertises read-only, non-destructive, idempotent and open-world annotations.
 There is no output schema or recursive response validation. Retrieved content is untrusted data.
-There is no search, writing, media download, cache, subscription or background
-refresh, and no upstream availability or completeness guarantee.
 
-The companion [URL routing skill](PLUGIN.md#url-routing-skill) calls this tool with
-the original public URL. A standalone MCP connection does not install the skill.
+For automatic tool selection and summary/coverage guidance, see
+[SKILL.md](SKILL.md). A standalone MCP connection does not install the skill.
 
 ## Response handling, cancellation, errors
 
@@ -105,8 +89,7 @@ Tool failures return `isError: true` and one JSON text block `{ code, message }`
 without successful structured content. Input validation rejects unsupported
 parameters. The adapter reads only the error code and message; it does not traverse
 exceptions or serialize stacks, causes, response headers or bodies. Non-Error
-throws receive `UPSTREAM` with a generic message. No retries or fallback occur.
-This replaces the previous recursive `{ code, diagnostic }` error format.
+throws receive `UPSTREAM` with a generic message.
 
 ## Transports
 
@@ -122,12 +105,13 @@ required by the SDK. It has no persistent MCP sessions or legacy SSE endpoint.
 
 | Environment variable | Default | Meaning |
 | --- | --- | --- |
-| `FEEDS_X_PROVIDER` | `fxtwitter` | Shared runtime selection. |
 | `FEEDS_MCP_HTTP_HOST` | `127.0.0.1` | Listener address. |
 | `FEEDS_MCP_HTTP_PORT` | `3000` | Port from 1 to 65535. |
 | `FEEDS_MCP_HTTP_ALLOW_REMOTE` | unset | Must be `true` to bind outside loopback. |
 | `FEEDS_MCP_HTTP_PUBLIC_URL` | local `/mcp` URL | Public HTTP(S) endpoint; also allows its Host header. |
 | `FEEDS_MCP_HTTP_ALLOWED_ORIGINS` | loopback hostnames | Whitespace-separated trusted browser origin hostnames. |
+
+Provider selection uses the shared [runtime configuration](ARCHITECTURE.md#runtime-configuration).
 
 Requests validate Host and Origin before dispatch. Both declared and chunked
 bodies are limited to 1 MiB. Headers and incoming requests use bounded timeouts;
@@ -144,12 +128,11 @@ for connection setup and actual tool-call verification.
 
 ## Verification and remaining deployment work
 
-Tests cover URL routing, unchanged response content, rejection of removed inputs,
+Tests cover input validation, unchanged response content,
 in-memory tool discovery/calls, large unchanged responses, simple error messages,
 caller cancellation, and real loopback HTTP.
-Packaging tests copy both bundles outside the repository without `node_modules`,
-then initialize clients, discover the tool and retrieve injected upstream
-data. No automated test requires live X/fxTwitter access.
+See [packaging verification](PLUGIN.md#verification) for isolated bundle checks.
+Automated MCP tests require no live upstream access.
 
 A live ChatGPT account connection and deployed HTTPS/authentication endpoint are
 not provisioned by this implementation. Verify actual MCP calls after configuring

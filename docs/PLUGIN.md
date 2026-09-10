@@ -1,6 +1,6 @@
 # Plugin packaging
 
-Feeds follows Recipes with two manifest pairs for one read-only MCP service:
+Feeds packages one read-only MCP service using two manifest pairs:
 
 | Target | Files | Contract |
 | --- | --- | --- |
@@ -15,11 +15,29 @@ The package identity is `feeds-dev`, version 0.1.0. Repository and plugin folder
 names need not match; installed plugin identity comes from the manifest.
 
 Both configurations start `node ./dist/feeds-mcp.mjs`. They omit `cwd` and rely on
-the plugin host starting in the installed plugin root, as in Recipes. No
+the plugin host starting in the installed plugin root. No
 undocumented plugin-root placeholder, `tsx`, or `node_modules` is required.
 `FEEDS_X_PROVIDER` is intentionally omitted so shared runtime defaults apply. No
 persistent data or `${PLUGIN_DATA}` setting is required. HTTP is a separate
 entry point documented in [MCP.md](MCP.md).
+
+The plugin is available through the Edgestream Lab marketplace as
+`feeds-dev@edgestream-dev`. The marketplace lives in
+[`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace),
+separate from this package. It supplies installation and discovery; this
+repository still does not deploy a remote server or install the plugin into a
+user's account automatically. See the [MCP quickstart](MCP.md#get-started) for
+the ChatGPT desktop and Codex CLI installation paths.
+
+## Skill packaging
+
+The companion [read-x skill](../skills/read-x/SKILL.md) ships at the portable
+fixed discovery path `skills/read-x/SKILL.md`. The Codex manifest also declares
+`skills: "./skills/"`; both layouts use the same files. Copy the `skills/` directory
+along with manifests and bundles when installing outside the checkout.
+See [SKILL.md](SKILL.md) for activation, argument selection, and behavioral verification.
+
+## Verification
 
 Keep identity, version, descriptions, author, repository, keywords, and shared
 launch settings synchronized. Packaging tests enforce this and start the bundles
@@ -33,37 +51,8 @@ npm test
 git diff --check
 ```
 
-The plugin is available through the Edgestream Lab marketplace as
-`feeds-dev@edgestream-dev`. The marketplace lives in
-[`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace),
-separate from this package. It supplies installation and discovery; this
-repository still does not deploy a remote server or install the plugin into a
-user's account automatically. See the [MCP quickstart](MCP.md#get-started) for
-the ChatGPT desktop and Codex CLI installation paths.
-
-## URL routing skill
-
-The companion [read-x skill](../skills/read-x/SKILL.md) ships at the portable
-fixed discovery path `skills/read-x/SKILL.md`. The Codex manifest also declares
-`skills: "./skills/"`; both layouts use the same files. Copy the `skills/` directory
-along with manifests and bundles when installing outside the checkout. A bare
-MCP connection alone does not install the companion skill.
-
-The skill routes retrieval requests containing `https://x.com` URLs through the
-installed Feeds `get_feed` before generic web retrieval. It passes the original
-URL as `source` for plain retrieval; explicit requests for replies written by an
-author add `answers: true` to the profile request. Continuation retains source
-and options and forwards `cursor.bottom`. The plugin handles validation and
-resolves profile and post links. The platform's broader URL support is unchanged.
-Explicit user tool choices and URLs merely quoted for editing remain outside
-implicit retrieval.
-
-Automatic skill selection depends on the host/model. Explicitly requesting Feeds
-or invoking `read-x` is a routing workaround; tool failures remain failures.
-
-Packaging tests check both skill discovery paths in an isolated installation and
-retain tool-only MCP discovery and complete upstream JSON retrieval against injected responses. They do not prove model
-activation. The maintainer reported successful completion of the manual routing
-tests, including actual MCP calls returning tweets or profiles. See the
-[routing evaluation protocol and recorded result](URL_ROUTING.md) for the tested
-scope and evidence limitations.
+Packaging tests check both skill discovery paths and execute the committed CLI
+and MCP bundles from isolated installations without `node_modules`. MCP clients
+initialize, discover the tool, and retrieve injected upstream data. These tests
+verify packaging and explicit calls, not automatic skill activation; that evidence
+belongs in [SKILL.md](SKILL.md#recorded-status).

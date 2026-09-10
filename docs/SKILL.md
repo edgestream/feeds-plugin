@@ -1,6 +1,29 @@
-# URL routing evaluation
+# Skill behavior and verification
 
-Issue #7 requires behavioral evidence in addition to packaging tests. Run each
+This document owns the companion skill's activation scope, tool/argument routing,
+and behavioral verification. The executable instructions live in
+[skills/read-x/SKILL.md](../skills/read-x/SKILL.md); change them when the model's
+instructions need to change. Manifest discovery and installation layout belong in
+[PLUGIN.md](PLUGIN.md#skill-packaging), tool semantics in [MCP.md](MCP.md#tool),
+and upstream behavior in the [provider README](../packages/provider-fxtwitter/README.md).
+
+## Activation and routing
+
+The `read-x` skill routes requests to read, show, summarize, or explain an
+`https://x.com` URL through the installed Feeds `get_feed` before generic web
+retrieval. Plain retrieval keeps the original URL as `source`; explicit authored
+reply requests and continuation use the arguments in the cases below. Explicit
+user tool choices take precedence, and URLs quoted only for editing do not
+request retrieval. Feeds remains responsible for URL validation.
+
+Automatic selection depends on the host/model. Explicitly requesting Feeds or
+invoking `read-x` is a routing workaround. Report tool failures accurately and
+preserve continuation information in summaries: neither a missing cursor nor a
+reply counter proves complete coverage.
+
+## Evaluation procedure
+
+Behavioral evidence is separate from [packaging checks](PLUGIN.md#verification). Run each
 case below three times in separate fresh tasks with the installed plugin enabled,
 without selecting or naming the skill/plugin in positive implicit prompts. Repeat
 the original prompt with “Use Feeds” as an explicit control. Keep live upstream
@@ -18,23 +41,18 @@ tool use is not evidence. Record repeated-run counts, including failures.
 | Prompt | Expected initial Feeds arguments |
 | --- | --- |
 | Show this post https://x.com/OpenAI/status/2082577277246972300 | Original `source` only |
-| Zeige diesen Post https://x.com/OpenAI/status/2082577277246972300 | Original `source` only |
 | Summarize https://x.com/OpenAI/status/2082577277246972300 | Original `source` only |
-| Fasse https://x.com/OpenAI/status/2082577277246972300 zusammen | Original `source` only |
 | Show the feed https://x.com/OpenAI | Original `source` only |
-| Fasse den Feed https://x.com/OpenAI zusammen | Original `source` only |
 | Show replies written by https://x.com/OpenAI | Original profile `source`, `answers: true` |
-| Zeige die selbst geschriebenen Antworten von https://x.com/OpenAI | Original profile `source`, `answers: true` |
 | Continue that author feed including replies | Same `source`, `answers: true`, prior `cursor.bottom` as `cursor` |
 
 Repeat plain retrieval with `/i/web/status/2082577277246972300`, post suffixes
 `/photo/1` and `/video/1`, and trailing slash/query/fragment variants such as
 `https://x.com/OpenAI/status/2082577277246972300/?s=20#fragment`.
 All must preserve the original URL; platform validation remains authoritative.
-Plain retrieval passes only the original `source`. Explicit authored-reply
-requests add `answers: true`; continuation retains that mode. Check that the
-response is described as a timeline including authored replies, without claims
-of replies-only results or complete history. Profile `context` stays unsupported.
+For authored-reply requests, check that the response is described as a timeline
+including authored replies, without claims of replies-only results or complete
+history. Profile `context` stays unsupported.
 Other platform-supported hosts retain their existing MCP/platform contracts.
 
 ## Negative and failure cases
@@ -62,8 +80,9 @@ The authored-reply and continuation routing cases added for #18 have not yet
 been evaluated in fresh installed-plugin tasks. Packaging tests verify explicit
 tool arguments, not model selection of those arguments.
 
-On 2026-09-09, the maintainer reported completing all manual tests in this
-document successfully. Retrieval requests produced actual successful MCP calls
+On 2026-09-09, the maintainer reported completing the then-existing manual
+routing cases successfully (before the authored-reply and continuation additions).
+Retrieval requests produced actual successful MCP calls
 returning tweets or profiles, confirming routing and live retrieval in the tested
 environment.
 

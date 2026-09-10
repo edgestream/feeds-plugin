@@ -2,7 +2,7 @@
 
 Each provider lives in `packages/provider-<name>` with its own manifest,
 TypeScript project, source, tests, and README. It implements core `FeedProvider`
-and depends only on core, never CLI, MCP, runtime, or another provider.
+within the dependency boundaries in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Requirements
 
@@ -27,11 +27,16 @@ and depends only on core, never CLI, MCP, runtime, or another provider.
 Document supported subject/option combinations, upstream parameter mappings, and
 known limitations in the provider package's README.
 
-Platforms recognize public URLs. Providers own upstream endpoints and request
-translation. The application selects the configured provider and passes through
-its result; it does not interpret the response. There are no references, resources,
-normalized pages or aggregate traversal in the shared contract. The optional cursor
-enables one caller-controlled continuation request at a time.
+## Response semantics
+
+The result preserves the complete upstream JSON object, including envelopes,
+groups, duplicates, unknown fields, and cursor fields. JSON values are preserved,
+not original bytes or whitespace; standard JavaScript numeric precision applies.
+There is no normalized post/page model. Consumers interpret body-level status
+codes and continuation fields themselves; an explicit cursor requests one further
+page and does not establish complete coverage.
+
+## Verification
 
 Run `test/contracts/feedProviderContract.ts` for each provider along with adapter
 coverage of supported URLs/options, complete response preservation, malformed

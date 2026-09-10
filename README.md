@@ -2,9 +2,9 @@
 
 ## MCP
 
-- Node.js 24 or later is required
+- Node.js 24 or later is required.
 
-For the quickest setup, install **Feeds Plugin** from our marketplace in the
+For the quickest setup, install the **Feeds** plugin from our marketplace in the
 ChatGPT desktop app. Codex users can run:
 
 ```bash
@@ -16,7 +16,7 @@ See [MCP.md](docs/MCP.md#get-started) for full setup.
 
 ## CLI
 
-Read an X post, its context or answers:
+From a local checkout after `npm ci`, read an X post, its context or answers:
 
 ```bash
 npx feeds show 'https://x.com/OpenAI/status/2082577277246972300'

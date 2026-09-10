@@ -1,5 +1,7 @@
 # Source Code Repository
-Git conventions for this repository
+
+This document owns Git commit conventions. For pull request titles, links, and
+GitHub metadata, see [ISSUES.md](ISSUES.md).
 
 ## Commit messages
 

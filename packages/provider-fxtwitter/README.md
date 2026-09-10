@@ -28,39 +28,30 @@ endpoint/cursor combinations are rejected before HTTP. The token is not decoded
 or otherwise interpreted. See the [conversation API documentation](https://docs.fxembed.com/api/twitter/operations/2conversationid/).
 The upstream defaults determine the returned scope and amount of data.
 
-Successful responses return the complete parsed JSON object. Envelopes, thread
-groups, duplicate entries, tombstones, unknown fields and upstream cursors remain
-untouched. There is no post/parent validation, local filtering, deduplication,
-body-level status-code interpretation or automatic continuation. Quote, media and
-source URLs in the response are never fetched.
+Responses follow the shared [provider contract](../../docs/PROVIDER.md#response-semantics).
+fxTwitter may include thread groups, tombstones, and body-level error codes;
+consumers interpret these upstream fields themselves.
 
 ## Transport and errors
 
 Requests set `Accept: application/json` and a read-only Feeds User-Agent. Endpoints
 are built from validated public X URLs containing numeric post IDs or author
-handles. Redirects are rejected. Fetch is injectable. The caller's abort signal
-is forwarded directly to fetch; caller cancellation reports `CANCELLED`.
-
-Successful responses use the built-in `Response.json()` method. There are no
-provider timeouts, response byte limits, stream readers, chunk buffers, response
-header iteration, body capture, UTF-8 handling or response validation. Native JSON
-parsing determines decoding and syntax behavior; the returned value is not inspected.
+handles. Redirects are rejected. Cancellation reports `CANCELLED`; transport injection, parsing, and signal handling
+follow the [shared requirements](../../docs/PROVIDER.md#requirements).
 
 HTTP 404 maps to `NOT_FOUND`, including empty timeline 404 responses; 429 maps to
 `RATE_LIMITED`; other unsuccessful statuses/network failures map to `UPSTREAM`.
-HTTP-error bodies are not read. Native JSON syntax errors map to `INVALID_RESPONSE`.
-An HTTP-success body is returned even if it contains an application-level error code
-or no posts. Exceptions retain their original cause internally; MCP reports only
-the error code and message, without recursive diagnostics or body serialization.
+Native JSON syntax errors map to `INVALID_RESPONSE`. See [MCP error formatting](../../docs/MCP.md#response-handling-cancellation-errors)
+and [CLI diagnostics](../../docs/CLI.md#input-and-output) for interface presentation.
 
 ## Limits
 
-Availability and coverage are controlled by fxTwitter. No completeness guarantee
-is made. There is no authentication, caching, retry, fallback, media downloading,
-or automatic pagination. Manual author-feed and conversation continuation uses the previous
-response's `cursor.bottom` with the same source and options, including the profile
-`answers` value. Profiles require `context` to be omitted or false. Automated verification uses injected responses and does
-not establish live API availability.
+Availability and coverage are controlled by fxTwitter; no completeness guarantee
+is made. The provider has no authentication or cache. To continue an author feed
+or conversation, pass the previous response's nonempty `cursor.bottom` unchanged
+with the same source and options. A missing cursor does not prove exhaustion.
+Automated tests use injected responses and do not establish live availability.
+The dated observations below record the verified scope and remaining upstream gap.
 
 ### Confirmed live author-replies continuation (2026-09-10)
 
@@ -89,33 +80,21 @@ This establishes a live upstream failure independent of CLI cursor handling;
 it does not establish exhaustion. Injected pagination tests verify request
 forwarding and response preservation, not working live continuation.
 
-The inspected [upstream implementation](https://github.com/FxEmbed/FxEmbed/blob/9e71a25114b9d8d00c3381d4e797e94b357f001c/packages/atmosphere/src/providers/twitter/conversation.ts#L1341)
-passes the cursor to its GraphQL requests but requires the focal post in
-`bucket.chainTweets` even on continuation pages. A missing focal post returns
-the null-filled 404 above before replies are returned. This is a plausible cause,
-not confirmed: the deployed revision and underlying X GraphQL response were not
-available, and other branches return the same body. No automatic retry, fallback,
-or conversion of this error to an empty successful page is implemented.
+The investigation found [FxEmbed issue #2087](https://github.com/FxEmbed/FxEmbed/issues/2087),
+reported on 2026-05-18 with the same failure and acknowledged by a maintainer.
+A further check of post `2097786616311840853` returned 34 replies and a bottom
+cursor, then the same HTTP 404 on continuation.
 
-Further investigation found the existing open [FxEmbed issue #2087](https://github.com/FxEmbed/FxEmbed/issues/2087),
-reported on 2026-05-18 with the same first-page success and null-filled continuation
-404. A maintainer acknowledged that the documented request should work. A fresh
-check of post `2097786616311840853` also returned 34 replies and a bottom cursor,
-then HTTP 404 when that cursor was passed immediately.
-
-The [upstream route](https://github.com/FxEmbed/FxEmbed/blob/9e71a25114b9d8d00c3381d4e797e94b357f001c/src/realms/api/routes/twitter.ts#L147)
-reads `query.cursor` and passes it into `constructTwitterConversation`.
-`fetchTweetDetail` forwards it to both eligible GraphQL methods. The response
-processor separates chain tweets from reply modules, but the constructor rejects
-any page without a matching focal chain tweet before building replies or exposing
-the next cursor. The public HTTP response cannot distinguish this branch from
-missing GraphQL instructions or other upstream failures. Confirming the exact
-live branch requires instrumentation of the deployed FxEmbed service and its
-GraphQL response; changing cursor encoding in this plugin does not address that
-uncertainty.
+In the inspected revision, the [upstream route](https://github.com/FxEmbed/FxEmbed/blob/9e71a25114b9d8d00c3381d4e797e94b357f001c/src/realms/api/routes/twitter.ts#L147)
+forwards the cursor, while the [conversation constructor](https://github.com/FxEmbed/FxEmbed/blob/9e71a25114b9d8d00c3381d4e797e94b357f001c/packages/atmosphere/src/providers/twitter/conversation.ts#L1341)
+requires the focal post in `bucket.chainTweets`, including on continuation pages.
+A missing focal post can produce this 404. This is a plausible cause, not a
+confirmed live diagnosis: the deployed revision and GraphQL response were not
+available, and other branches produce the same body. Confirmation requires
+instrumenting the deployed service; changing plugin cursor encoding does not
+resolve that uncertainty.
 
 As a control, author-statuses pagination succeeded across three CLI calls with
 58 distinct post IDs. Articles pagination returned HTTP 200 across three direct
-calls but no entries. The confirmed conversation limitation therefore does not
-justify disabling cursor forwarding generally. Status and thread endpoints still
-reject cursor options before any HTTP request.
+calls but no entries. The conversation failure does not justify disabling cursor
+forwarding generally or converting errors into empty successful pages.
