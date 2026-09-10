@@ -2,9 +2,9 @@
 
 ## MCP
 
-Node.js 24 or later is required.
+- Node.js 24 or later is required.
 
-For the quickest setup, install **Feeds Dev** from our marketplace in the
+For the quickest setup, install the **Feeds** plugin from our marketplace in the
 ChatGPT desktop app. Codex users can run:
 
 ```bash
