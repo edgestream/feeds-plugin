@@ -19,6 +19,7 @@ test("synchronizes plugin metadata and launch configuration", async () => {
   assert.equal(codex.version, (await json("package.json")).version);
   assert.equal(codex.interface.category, "Communications");
   assert.deepEqual(codex.interface.capabilities, ["Read"]);
+  assert.equal(codex.interface.defaultPrompt[0], "Read feed for [https://x.com/OpenAI](https://x.com/OpenAI)");
   assert.equal(codex.mcpServers, "./.mcp.json");
   assert.equal(codex.skills, "./skills/");
   assert.equal(portable.mcpServers, undefined);
