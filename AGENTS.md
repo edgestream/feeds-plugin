@@ -45,7 +45,6 @@ Documentation is part of the implementation, not a follow-up task.
 | [MCP.md](docs/MCP.md) | MCP setup, tool inputs and results, user-visible option semantics, errors, and transports. Describe how clients invoke affected behavior; link to provider details. |
 | [PLUGIN.md](docs/PLUGIN.md) | Manifests, plugin identity, packaging, discovery, and installation layout. Rebuilding bundles alone does not require a documentation edit. |
 | [SKILL.md](docs/SKILL.md) | Skill activation scope, tool/argument routing, evaluation procedure, and recorded evidence. Executable model instructions live in `skills/<name>/SKILL.md`; packaging stays in PLUGIN.md. |
-| [IMPLEMENTATION.md](docs/IMPLEMENTATION.md) | Historical first-milestone context and links to current documentation. Do not maintain it as a second description of current behavior. |
 | [AGENTS.md](AGENTS.md), [REPOSITORY.md](docs/REPOSITORY.md), [ISSUES.md](docs/ISSUES.md) | Agent workflow, Git conventions, and GitHub issue/PR conventions, respectively. |
 
 - Update only documents whose owned behavior or requirements change, or whose
