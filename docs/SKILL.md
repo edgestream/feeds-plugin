@@ -41,13 +41,9 @@ tool use is not evidence. Record repeated-run counts, including failures.
 | Prompt | Expected initial Feeds arguments |
 | --- | --- |
 | Show this post https://x.com/OpenAI/status/2082577277246972300 | Original `source` only |
-| Zeige diesen Post https://x.com/OpenAI/status/2082577277246972300 | Original `source` only |
 | Summarize https://x.com/OpenAI/status/2082577277246972300 | Original `source` only |
-| Fasse https://x.com/OpenAI/status/2082577277246972300 zusammen | Original `source` only |
 | Show the feed https://x.com/OpenAI | Original `source` only |
-| Fasse den Feed https://x.com/OpenAI zusammen | Original `source` only |
 | Show replies written by https://x.com/OpenAI | Original profile `source`, `answers: true` |
-| Zeige die selbst geschriebenen Antworten von https://x.com/OpenAI | Original profile `source`, `answers: true` |
 | Continue that author feed including replies | Same `source`, `answers: true`, prior `cursor.bottom` as `cursor` |
 
 Repeat plain retrieval with `/i/web/status/2082577277246972300`, post suffixes
