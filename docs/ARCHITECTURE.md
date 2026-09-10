@@ -34,9 +34,9 @@ apps/mcp-server -+--> packages/runtime --> packages/application --> packages/cor
 `FeedService.show(url, options, context)` selects a platform using
 `Platform.supports(URL)` and calls `FeedProvider.get(URL, options, context)` once.
 `FeedOptions` contains `context`, `answers`, and an optional opaque `cursor`. Providers return `JsonObject`.
-For fxTwitter, these flags select thread/conversation endpoints for posts;
-profile `answers` adds `with_replies=1` to include authored replies.
-Profile `context` is unsupported. These options do not trigger local selection of posts. See the [provider README](../packages/provider-fxtwitter/README.md).
+Providers translate these options into upstream requests and validate supported
+subject/option combinations. The application does not select or filter posts.
+Provider-specific behavior belongs in each provider package's README.
 
 The entire upstream JSON object is preserved, including its envelope, grouped
 results, duplicates, unknown fields, and any upstream cursor fields. There is no

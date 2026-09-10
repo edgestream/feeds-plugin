@@ -65,5 +65,5 @@ Packaging tests check both skill discovery paths in an isolated installation and
 retain tool-only MCP discovery and complete upstream JSON retrieval against injected responses. They do not prove model
 activation. The maintainer reported successful completion of the manual routing
 tests, including actual MCP calls returning tweets or profiles. See the
-[routing evaluation protocol and recorded result](URL_ROUTING.md) for the tested
+[skill routing verification and recorded result](SKILL.md) for the tested
 scope and evidence limitations.

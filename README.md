@@ -27,8 +27,6 @@ Read an author's feed:
 
 ```bash
 npx feeds show 'https://x.com/OpenAI'
-# Include replies written by the author:
-npx feeds show --answers 'https://x.com/OpenAI'
 ```
 
 See [CLI.md](docs/CLI.md) for available options and examples.

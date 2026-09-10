@@ -24,9 +24,8 @@ and depends only on core, never CLI, MCP, runtime, or another provider.
 - Forward the caller's abort signal directly to fetch; do not create a deadline.
 - Do not silently retry, fall back, or discover providers.
 
-For fxTwitter profiles, `answers: true` includes replies written by the author
-in the upstream timeline; `context: true` remains invalid. Post answers continue
-to select the conversation endpoint. Continuation retains the same option values.
+Document supported subject/option combinations, upstream parameter mappings, and
+known limitations in the provider package's README.
 
 Platforms recognize public URLs. Providers own upstream endpoints and request
 translation. The application selects the configured provider and passes through

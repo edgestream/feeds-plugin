@@ -9,7 +9,7 @@ Use inside the repository after `npm ci`. The executable points to committed
 `dist/feeds-cli.mjs`; bare `npx feeds` outside this unpublished checkout does not
 identify this project.
 
-## URLs and endpoint selection
+## URLs and options
 
 The URL identifies a post or author profile; no separate timeline command exists.
 
@@ -21,12 +21,12 @@ npx feeds show --context --answers 'https://x.com/OpenAI/status/2082577277246972
 npx feeds show 'https://x.com/OpenAI'
 ```
 
-Options may precede or follow the URL. `--context` selects the thread endpoint;
-`--answers` selects the conversation endpoint and takes precedence when both are
-set for posts. `--context` requires a post URL. A profile URL reads the upstream
-author's timeline; `--answers` includes replies written by that author using
-`with_replies=1`. This is a mixed timeline, not replies-only or replies received
-from others. Profile `--context` is rejected even alongside `--answers`.
+Options may precede or follow the URL. `--context` requests context for a post.
+`--answers` requests replies to a post or includes replies written by an author
+in that author's feed. These options request available content, not complete
+coverage or a replies-only result. Providers validate supported combinations;
+see the [provider documentation](../packages/provider-fxtwitter/README.md) for
+endpoint mappings and restrictions.
 Each call makes one request and returns the entire response without local filtering.
 The upstream defaults determine the amount and scope of returned data.
 Use `--cursor` with `--answers` and the same post URL to continue a conversation:
