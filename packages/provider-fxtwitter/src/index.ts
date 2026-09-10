@@ -22,14 +22,17 @@ export class FxTwitterProvider implements FeedProvider {
         (!post && (!author || reserved.includes(author[1]!.toLowerCase())))) {
       throw new FeedError("INVALID_INPUT", "Expected a public X post or profile URL.");
     }
-    if (!post && (options.context || options.answers)) throw new FeedError("INVALID_INPUT", "Context and answers require a post URL.");
+    if (!post && options.context) throw new FeedError("INVALID_INPUT", "Context requires a post URL.");
     if (options.cursor !== undefined && (typeof options.cursor !== "string" || !options.cursor || (post && !options.answers))) {
       throw new FeedError("INVALID_INPUT", "Cursor must be a nonempty string and requires a profile URL or a post URL with answers enabled.");
     }
     const path = post
       ? `${options.answers ? "conversation" : options.context ? "thread" : "status"}/${post[1]}`
       : `profile/${author![1]!.toLowerCase()}/statuses`;
-    const query = options.cursor !== undefined ? `?${new URLSearchParams({ cursor: options.cursor })}` : "";
+    const parameters = new URLSearchParams();
+    if (!post && options.answers) parameters.set("with_replies", "1");
+    if (options.cursor !== undefined) parameters.set("cursor", options.cursor);
+    const query = parameters.size ? `?${parameters}` : "";
     return this.request(`${path}${query}`, context);
   }
 

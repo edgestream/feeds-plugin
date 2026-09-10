@@ -24,6 +24,9 @@ and depends only on core, never CLI, MCP, runtime, or another provider.
 - Forward the caller's abort signal directly to fetch; do not create a deadline.
 - Do not silently retry, fall back, or discover providers.
 
+Document supported subject/option combinations, upstream parameter mappings, and
+known limitations in the provider package's README.
+
 Platforms recognize public URLs. Providers own upstream endpoints and request
 translation. The application selects the configured provider and passes through
 its result; it does not interpret the response. There are no references, resources,

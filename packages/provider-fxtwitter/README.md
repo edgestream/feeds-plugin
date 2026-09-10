@@ -13,13 +13,17 @@ Each call makes one GET request to a fixed `https://api.fxtwitter.com/2/` endpoi
 | Post with `context` | `thread/{id}` |
 | Post with `answers`, optionally `context` | `conversation/{id}` |
 | Author profile | `profile/{handle}/statuses` |
+| Author profile with `answers` | `profile/{handle}/statuses?with_replies=1` |
 
-`answers` takes precedence over `context`; both flags are rejected for profiles.
+For posts, `answers` takes precedence over `context`. Profiles reject `context: true`
+regardless of `answers`. Profile `answers: true` includes replies written by the
+author in the timeline; it does not filter to replies only or retrieve all
+replies received from others. Omitted/false `answers` keeps the default timeline.
 Author handles are lowercased when building endpoints. Source query strings and
 fragments are ignored; no count or ordering parameters are added. An explicit
 nonempty `cursor` option accepts a profile or a post with `answers: true` and is
 encoded with `URLSearchParams` as the selected author-statuses or conversation
-endpoint's `cursor` query parameter. Other
+endpoint's `cursor` query parameter, retaining `with_replies=1` for profile answers. Other
 endpoint/cursor combinations are rejected before HTTP. The token is not decoded
 or otherwise interpreted. See the [conversation API documentation](https://docs.fxembed.com/api/twitter/operations/2conversationid/).
 The upstream defaults determine the returned scope and amount of data.
@@ -54,9 +58,18 @@ the error code and message, without recursive diagnostics or body serialization.
 Availability and coverage are controlled by fxTwitter. No completeness guarantee
 is made. There is no authentication, caching, retry, fallback, media downloading,
 or automatic pagination. Manual author-feed and conversation continuation uses the previous
-response's `cursor.bottom` with the same source and options. Profiles require
-context/answers to be omitted or false. Automated verification uses injected responses and does
+response's `cursor.bottom` with the same source and options, including the profile
+`answers` value. Profiles require `context` to be omitted or false. Automated verification uses injected responses and does
 not establish live API availability.
+
+### Confirmed live author-replies continuation (2026-09-10)
+
+The rebuilt CLI retrieved `https://x.com/MayoOhnePommes` with `--answers`, then
+continued with the returned `cursor.bottom` and the same option. Both responses
+had code 200, with 27 and 28 result entries respectively and nonempty bottom
+cursors. This confirms two live profile pages with `with_replies=1`, not complete
+historical coverage or a count of distinct authored replies. Automated tests
+separately verify the exact endpoint, query parameters, and unchanged payloads.
 
 ### Confirmed live continuation failure (2026-09-10)
 

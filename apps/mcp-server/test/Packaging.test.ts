@@ -42,6 +42,10 @@ async function installed() {
     if (parsed.pathname === '/2/conversation/123' || parsed.pathname === '/2/profile/openai/statuses') {
       const cursor = parsed.searchParams.get('cursor');
       if (cursor !== null && cursor !== 'next+/=&x=1#%') throw new Error('Unexpected cursor');
+      if (parsed.searchParams.has('with_replies')) {
+        if (parsed.searchParams.get('with_replies') !== '1') throw new Error('Unexpected replies mode');
+        return Response.json({ results: [{ id: cursor === null ? 'reply1' : 'reply2', replying_to: { status: '123' } }], cursor: cursor === null ? { bottom: 'next+/=&x=1#%' } : null });
+      }
       return Response.json({ [parsed.pathname.includes('/profile/') ? 'results' : 'replies']: [{ id: cursor === null ? '1' : '2' }], cursor: cursor === null ? { bottom: 'next+/=&x=1#%' } : null });
     }
     const id = String(url).split('/').pop();
@@ -87,6 +91,13 @@ async function verify(client: Client) {
   const authorNext = await client.callTool({ name: "get_feed", arguments: { source: profile, cursor: (authorFirst.structuredContent as { cursor: { bottom: string } }).cursor.bottom } });
   assert.equal(authorNext.isError, undefined);
   assert.deepEqual(authorNext.structuredContent, { results: [{ id: "2" }], cursor: null });
+  for (const cursor of [undefined, "next+/=&x=1#%"]) {
+    const replies = await client.callTool({ name: "get_feed", arguments: { source: profile, answers: true, ...(cursor ? { cursor } : {}) } });
+    assert.equal(replies.isError, undefined);
+    assert.deepEqual(replies.structuredContent, { results: [{ id: cursor ? "reply2" : "reply1", replying_to: { status: "123" } }], cursor: cursor ? null : { bottom: "next+/=&x=1#%" } });
+  }
+  const invalid = await client.callTool({ name: "get_feed", arguments: { source: profile, answers: true, context: true } });
+  assert.equal(invalid.isError, true);
   const result = await client.callTool({ name: "get_feed", arguments: { source: "https://x.com/a/status/123" } });
   assert.equal(result.isError, undefined);
   assert.deepEqual(result.structuredContent, { status: { id: "123", text: "bundle fixture" } });

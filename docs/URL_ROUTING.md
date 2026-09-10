@@ -23,14 +23,19 @@ tool use is not evidence. Record repeated-run counts, including failures.
 | Fasse https://x.com/OpenAI/status/2082577277246972300 zusammen | Original `source` only |
 | Show the feed https://x.com/OpenAI | Original `source` only |
 | Fasse den Feed https://x.com/OpenAI zusammen | Original `source` only |
+| Show replies written by https://x.com/OpenAI | Original profile `source`, `answers: true` |
+| Zeige die selbst geschriebenen Antworten von https://x.com/OpenAI | Original profile `source`, `answers: true` |
+| Continue that author feed including replies | Same `source`, `answers: true`, prior `cursor.bottom` as `cursor` |
 
 Repeat plain retrieval with `/i/web/status/2082577277246972300`, post suffixes
 `/photo/1` and `/video/1`, and trailing slash/query/fragment variants such as
 `https://x.com/OpenAI/status/2082577277246972300/?s=20#fragment`.
 All must preserve the original URL; platform validation remains authoritative.
-Retrieval must pass only the original `source`, without additional parameters.
-Other platform-supported hosts and optional tool parameters are outside this
-skill's routing scope; their existing MCP/platform contracts are unchanged.
+Plain retrieval passes only the original `source`. Explicit authored-reply
+requests add `answers: true`; continuation retains that mode. Check that the
+response is described as a timeline including authored replies, without claims
+of replies-only results or complete history. Profile `context` stays unsupported.
+Other platform-supported hosts retain their existing MCP/platform contracts.
 
 ## Negative and failure cases
 
@@ -52,6 +57,10 @@ skill's routing scope; their existing MCP/platform contracts are unchanged.
   never an empty successful feed or complete coverage.
 
 ## Recorded status
+
+The authored-reply and continuation routing cases added for #18 have not yet
+been evaluated in fresh installed-plugin tasks. Packaging tests verify explicit
+tool arguments, not model selection of those arguments.
 
 On 2026-09-09, the maintainer reported completing all manual tests in this
 document successfully. Retrieval requests produced actual successful MCP calls

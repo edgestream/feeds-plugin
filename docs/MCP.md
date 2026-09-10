@@ -55,10 +55,12 @@ stdio and stateless Streamable HTTP using the MCP TypeScript SDK and Zod.
 ## Tool
 
 `get_feed(source, context?, answers?, cursor?)` accepts a complete public post or profile URL.
-Bare handles, IDs and internal URIs are unsupported. The optional booleans select
-upstream endpoints: `context` selects a thread, `answers` a conversation and takes
-precedence when both are true. Both require a post URL. Profile URLs retrieve the
-author's feed using upstream defaults. See [CLI.md](CLI.md) for supported URL forms.
+Bare handles, IDs and internal URIs are unsupported. `context` requests post
+context; `answers` requests replies to a post or includes replies written by an
+author in that author's feed. Providers validate supported combinations and
+determine available coverage. See [CLI.md](CLI.md) for supported URL forms and
+the [provider documentation](../packages/provider-fxtwitter/README.md) for
+endpoint mappings, restrictions, and known upstream limitations.
 
 Each call makes one upstream request. Successful results contain:
 
@@ -72,10 +74,12 @@ Pass the previous profile or conversation response's `cursor.bottom` unchanged w
 source and options to request another page. Cursorless calls refresh the first page.
 For example: `get_feed({source: "https://x.com/OpenAI/status/2082577277246972300", answers: true, cursor: "<cursor.bottom>"})`.
 For profiles, use `get_feed({source: "https://x.com/OpenAI", cursor: "<cursor.bottom>"})`
-without context/answers flags. Context-only post continuation is unsupported. Live conversation continuation currently reproduces an upstream 404
-even with fresh cursors; see the [recorded provider limitation](../packages/provider-fxtwitter/README.md#confirmed-live-continuation-failure-2026-09-10). Preserve continuation
-information in summaries; a returned cursor means further retrieval can be attempted,
-and neither its absence nor a reply counter proves complete coverage.
+with the same options used for the first page. To include authored replies, use
+`get_feed({source: "https://x.com/OpenAI", answers: true})` and retain
+`answers: true` when passing the returned cursor on subsequent calls.
+Preserve continuation information in summaries; a returned cursor means further
+retrieval can be attempted, and neither its absence nor a reply counter proves
+complete coverage.
 There are no aggregate page options, local filtering, deduplication or automatic
 continuation. Clients interpret the provider's response directly, including any
 body-level error codes in HTTP-success responses.
