@@ -27,8 +27,6 @@ in that author's feed. These options request available content, not complete
 coverage or a replies-only result. Providers validate supported combinations;
 see the [provider documentation](../packages/provider-fxtwitter/README.md) for
 endpoint mappings and restrictions.
-Each call makes one request and returns the entire response without local filtering.
-The upstream defaults determine the amount and scope of returned data.
 Use `--cursor` with `--answers` and the same post URL to continue a conversation:
 
 ```bash
@@ -59,11 +57,9 @@ and fragments are ignored. Credentials, nonstandard ports, other hosts, bare IDs
 bare handles, and internal Feeds URIs are rejected. The [MCP interface](MCP.md)
 accepts the same public URLs.
 
-The CLI prints the complete upstream JSON object, indented with two spaces and a
-trailing newline. Envelopes, groups, duplicates, unknown fields and any upstream
-cursor fields are preserved. No wrapper or metadata is added. JSON values are
-preserved subject to standard JavaScript numeric precision; original bytes and
-whitespace are not. There is no automatic continuation or completeness guarantee.
+The CLI prints the provider result, indented with two spaces and a trailing
+newline, without adding a wrapper. See the shared
+[response semantics](PROVIDER.md#response-semantics) for preservation and coverage.
 
 Diagnostics use `CODE: message` on stderr. Exit codes:
 
@@ -76,6 +72,5 @@ Diagnostics use `CODE: message` on stderr. Exit codes:
 
 ## Configuration
 
-`FEEDS_X_PROVIDER` selects the X provider, defaulting to `fxtwitter` when absent.
-Empty/unknown values are configuration errors. Runtime configuration is shared
-with MCP. No configurable API root, credentials, cache, fallback, or retries.
+Provider selection uses the shared
+[runtime configuration](ARCHITECTURE.md#runtime-configuration).

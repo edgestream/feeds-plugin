@@ -140,16 +140,10 @@ architectural decisions unless the issue links to an accepted decision. -->
 - Documentation drift: <!-- Risk and mitigation, or not applicable with a reason. -->
 ```
 
-Scope must record both included work and explicit non-goals whenever a boundary
-is material. Dependencies must distinguish strict blockers from optional
-integrations, convenient implementation order, related work, and documentation
-coordination. Investigation must distinguish evidence from hypotheses.
-Implementation notes are an outline or constraint set, not approval for a new
-architecture. Verification should cover each applicable layer named in the
-template. Risks should assess regressions to current behavior, compatibility,
-security and privacy, data integrity, performance or upstream load, and
-documentation drift; omit nothing applicable, but mark an irrelevant category
-`Not applicable` with a short reason.
+For Feature issues, use the template to distinguish confirmed facts from
+hypotheses and strict blockers from other relationships. An implementation note
+is not an architectural decision. Keep each applicable verification and risk
+category; justify any `Not applicable` entry.
 
 ## Label assessment
 
