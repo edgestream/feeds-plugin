@@ -33,14 +33,15 @@ apps/mcp-server -+--> packages/runtime --> packages/application --> packages/cor
 
 `FeedService.show(url, options, context)` selects a platform using
 `Platform.supports(URL)` and calls `FeedProvider.get(URL, options, context)` once.
-`FeedOptions` contains only `context` and `answers`. Providers return `JsonObject`.
+`FeedOptions` contains `context`, `answers`, and an optional opaque `cursor`. Providers return `JsonObject`.
 For fxTwitter, these flags select thread/conversation endpoints; they do not
 trigger local selection of posts. See the [provider README](../packages/provider-fxtwitter/README.md).
 
 The entire upstream JSON object is preserved, including its envelope, grouped
 results, duplicates, unknown fields, and any upstream cursor fields. There is no
 post model, identity/parent normalization, filtering, deduplication, page traversal,
-continuation API, or resource URI. Only complete public URLs are accepted.
+automatic continuation, or resource URI. Manual author-feed and conversation continuation forwards
+an explicit cursor to the provider without interpreting response fields. Only complete public URLs are accepted.
 JSON parsing/serialization preserves JSON values, not original bytes or whitespace;
 standard JavaScript numeric precision limits apply. Providers use built-in
 `Response.json()`; MCP uses `JSON.stringify()` and forwards structured content.

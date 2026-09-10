@@ -1,7 +1,7 @@
 # CLI
 
 ```text
-npx feeds show [--context] [--answers] <url>
+npx feeds show [--context] [--answers] [--cursor <cursor>] <url>
 npx feeds --help
 ```
 
@@ -26,7 +26,22 @@ Options may precede or follow the URL. `--context` selects the thread endpoint;
 set. Both require a post URL. A profile URL reads the upstream author's timeline.
 Each call makes one request and returns the entire response without local filtering.
 The upstream defaults determine the amount and scope of returned data.
-There are no `--all`, `--cursor`, or `--limit` options.
+Use `--cursor` with `--answers` and the same post URL to continue a conversation:
+
+```bash
+npx feeds show --answers --cursor '<cursor.bottom>' 'https://x.com/OpenAI/status/2082577277246972300'
+```
+
+Copy the nonempty `cursor.bottom` value from the previous JSON response unchanged.
+For an author feed, omit `--answers`:
+
+```bash
+npx feeds show --cursor '<cursor.bottom>' 'https://x.com/OpenAI'
+```
+
+Each invocation makes one request. Context-only post cursors are rejected;
+source URL query strings cannot substitute for `--cursor`. A cursorless call
+refreshes the first page. There are no `--all` or `--limit` options.
 
 ## Input and output
 

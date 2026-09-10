@@ -29,6 +29,8 @@ Read an author's feed:
 npx feeds show 'https://x.com/OpenAI'
 ```
 
+See [CLI.md](docs/CLI.md) for available options and examples.
+
 ## Development
 
 ```bash
