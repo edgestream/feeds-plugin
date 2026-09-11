@@ -36,8 +36,8 @@ It manages:
   patterns, currently `apps/*` and `packages/*`.
 - `package-lock.json`: top-level version, root package, and local workspace
   entries. External dependency versions and integrity metadata remain unchanged.
-- `plugin.json` and `.codex-plugin/plugin.json`: version, plugin name, and the
-  Codex display name selected by channel.
+- `plugin.json` and `.codex-plugin/plugin.json`: version, plugin name, and
+  matching display names selected by channel.
 - `apps/mcp-server/src/version.ts`: the default MCP initialization version.
   The server's explicit version override remains available to callers.
 - `packages/provider-fxtwitter/src/version.ts`: the version in the upstream

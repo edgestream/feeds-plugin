@@ -74,14 +74,16 @@ export async function planRelease(directory, { version, channel }) {
   }
   lock.version = version;
   await queueJson("package-lock.json", lock);
+  const displayName = channel === "stable" ? "Feeds" : "Feeds Dev";
   for (const file of ["plugin.json", ".codex-plugin/plugin.json"]) {
     const value = await readJson(file);
     value.version = version;
     value.name = channel === "stable" ? "feeds" : "feeds-dev";
-    if (file === ".codex-plugin/plugin.json") {
-      if (!value.interface) throw new Error("Missing Codex plugin interface metadata.");
-      value.interface.displayName = channel === "stable" ? "Feeds" : "Feeds Dev";
-    }
+    const interfaceMetadata = file === "plugin.json"
+      ? value.extensions?.["com.openai"]?.interface
+      : value.interface;
+    if (!interfaceMetadata) throw new Error(`Missing plugin interface metadata: ${file}`);
+    interfaceMetadata.displayName = displayName;
     await queueJson(file, value);
   }
   for (const file of runtimeFiles) {
