@@ -1,0 +1,29 @@
+Feeds people/waves logo draft
+
+Source: user-supplied users-round.svg from Lucide.
+Upstream: https://lucide.dev/icons/users-round
+License: see LICENSE-lucide.txt (upstream Lucide license notices).
+
+Changes: retain the original person and second contour; repeat the second
+contour five units to the right as a third person/sound-wave contour.
+Use white strokes and a padded square canvas.
+
+feeds-people-waves.svg and .png have a transparent background.
+feeds-people-waves-dark.svg and .png have an anthracite (#212121) background.
+SVG files are editable sources; PNG files are 1024 x 1024 exports.
+
+Small PNG exports append -64, -128, or -256 before .png, for both backgrounds.
+They are rendered directly from the SVG sources, preserving the geometry.
+Each small export is square and strictly below 10,000 bytes (the requested
+project budget). The original 1024-pixel PNGs are not within this budget.
+
+Verified file sizes in bytes (transparent / dark):
+64 x 64: 1612 / 1462
+128 x 128: 3462 / 2952
+256 x 256: 7116 / 6058
+
+OpenAI packaged branding image requirements checked on 2026-09-11:
+https://developers.openai.com/plugins/deploy/submission-errors#image-errors
+PNG is supported; raster branding images must be square, at least 48 x 48,
+at most 4096 x 4096, and no larger than 5 MiB. The 10,000-byte export budget
+is a stricter user requirement, not the limit stated on that page.

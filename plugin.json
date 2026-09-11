@@ -7,10 +7,33 @@
     "name": "Edgestream"
   },
   "repository": "https://github.com/edgestream/feeds-plugin",
+  "license": "MIT",
   "keywords": [
     "feeds",
     "social-media",
     "communications",
     "mcp"
-  ]
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Feeds Dev",
+        "shortDescription": "Read public social media feeds",
+        "longDescription": "Read public posts, available context, replies and author feeds from supported social platforms.",
+        "developerName": "Edgestream",
+        "category": "Communications",
+        "capabilities": [
+          "Read"
+        ],
+        "defaultPrompt": [
+          "Read feed for https://x.com/OpenAI",
+          "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
+          "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
+        ],
+        "brandColor": "#212121",
+        "composerIcon": "./assets/feeds-people-waves-dark-128.png",
+        "logo": "./assets/feeds-people-waves-dark-128.png"
+      }
+    }
+  }
 }

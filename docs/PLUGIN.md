@@ -8,10 +8,19 @@ Feeds packages one read-only MCP service using two manifest pairs:
 | Codex | `.codex-plugin/plugin.json`, `.mcp.json` | [Codex plugin packaging](https://developers.openai.com/plugins/build/plugins) |
 
 The portable manifests declare matching 1.0.0 schemas. `plugin.json` carries
+metadata and the OpenAI-specific `extensions.com.openai.interface` presentation
 metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
 `./.mcp.json` and adds install-surface metadata: Feeds Dev, Edgestream,
 `Communications`, capability `Read`, and prompts for feeds, context and replies.
-The package identity is `feeds-dev`, version 0.1.0. Repository and plugin folder
+Both metadata surfaces reference the same local square logo and composer icon at
+`./assets/feeds-people-waves-dark-128.png`. The asset is kept below 10 kB and
+is copied with the plugin; paths resolve from the installed plugin root. The
+portable manifest's OpenAI extension follows the [official plugin packaging
+specification](https://developers.openai.com/plugins/build/plugins), and the
+asset constraints follow the [official submission error reference](https://developers.openai.com/plugins/deploy/submission-errors#image-errors).
+The development package identity is `feeds-dev`; both manifests use the root
+package version. Stable releases use `feeds` / `Feeds`, following
+[the release procedure](RELEASE.md). Repository and plugin folder
 names need not match; installed plugin identity comes from the manifest.
 
 Both configurations start `node ./dist/feeds-mcp.mjs`. They omit `cwd` and rely on
