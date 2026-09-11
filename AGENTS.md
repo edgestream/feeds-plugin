@@ -15,6 +15,8 @@ Read the project documentation before changing code or public behavior:
 - Read [MCP.md](docs/MCP.md) when changing MCP tools, resources, or transports.
 - Read [PLUGIN.md](docs/PLUGIN.md) when changing manifests, bundles, or installation
   packaging.
+- Read [RELEASE.md](docs/RELEASE.md) when changing release tooling, versioning,
+  publication, or maintenance branches.
 - Read [SKILL.md](docs/SKILL.md) and the relevant executable skill instructions when
   changing skill behavior or its verification.
 
@@ -44,6 +46,7 @@ Documentation is part of the implementation, not a follow-up task.
 | [CLI.md](docs/CLI.md) | CLI syntax, supported public URL forms shared with MCP, user-visible option semantics, examples, output, and exit codes. Link to shared runtime configuration. Describe how users invoke affected behavior; link to provider details. |
 | [MCP.md](docs/MCP.md) | MCP setup, tool inputs and results, user-visible option semantics, errors, and transports. Describe how clients invoke affected behavior; link to provider details. |
 | [PLUGIN.md](docs/PLUGIN.md) | Manifests, plugin identity, packaging, discovery, and installation layout. Rebuilding bundles alone does not require a documentation edit. |
+| [RELEASE.md](docs/RELEASE.md) | Release preparation, version synchronization, branches and tags, publication gates, marketplace promotion, and backports. |
 | [SKILL.md](docs/SKILL.md) | Skill activation scope, tool/argument routing, evaluation procedure, and recorded evidence. Executable model instructions live in `skills/<name>/SKILL.md`; packaging stays in PLUGIN.md. |
 | [AGENTS.md](AGENTS.md), [REPOSITORY.md](docs/REPOSITORY.md), [ISSUES.md](docs/ISSUES.md) | Agent workflow, Git conventions, and GitHub issue/PR conventions, respectively. |
 

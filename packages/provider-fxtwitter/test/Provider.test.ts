@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { FxTwitterProvider } from "../src/index.js";
+import { version } from "../src/version.js";
 import { feedProviderContract } from "../../../test/contracts/feedProviderContract.js";
 
 const payload = { code: 200, status: { id: "1234567890123456789", text: "Hello 🌍", unknown: [null, true, { value: 42 }] }, extra: "preserved" };
@@ -15,6 +16,7 @@ test("uses only the v2 status endpoint with headers and redirects disabled", asy
     assert.equal(url, `https://api.fxtwitter.com/2/status/1234567890123456789`);
     assert.equal(options?.redirect, "error");
     assert.equal(new Headers(options?.headers).get("Accept"), "application/json");
+    assert.equal(new Headers(options?.headers).get("User-Agent"), `feeds-plugin/${version} (read-only)`);
     assert.equal(options?.signal, undefined);
     return Response.json(payload);
   } });

@@ -1,4 +1,5 @@
 import { FeedError, type JsonObject, type FeedProvider, type FeedOptions, type RequestContext } from "@edgestream/feeds-core";
+import { version } from "./version.js";
 
 export interface FxTwitterOptions {
   readonly fetch?: typeof globalThis.fetch;
@@ -40,7 +41,7 @@ export class FxTwitterProvider implements FeedProvider {
     if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
     try {
       const response = await this.fetch(`https://api.fxtwitter.com/2/${path}`, {
-        headers: { Accept: "application/json", "User-Agent": "feeds-plugin/0.1.0 (read-only)" },
+        headers: { Accept: "application/json", "User-Agent": `feeds-plugin/${version} (read-only)` },
         redirect: "error",
         ...(context.signal ? { signal: context.signal } : {}),
       });

@@ -11,7 +11,9 @@ The portable manifests declare matching 1.0.0 schemas. `plugin.json` carries
 metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
 `./.mcp.json` and adds install-surface metadata: Feeds Dev, Edgestream,
 `Communications`, capability `Read`, and prompts for feeds, context and replies.
-The package identity is `feeds-dev`, version 0.1.0. Repository and plugin folder
+The development package identity is `feeds-dev`; both manifests use the root
+package version. Stable releases use `feeds` / `Feeds`, following
+[the release procedure](RELEASE.md). Repository and plugin folder
 names need not match; installed plugin identity comes from the manifest.
 
 Both configurations start `node ./dist/feeds-mcp.mjs`. They omit `cwd` and rely on
