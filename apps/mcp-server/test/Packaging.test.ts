@@ -74,6 +74,7 @@ test("installed portable and Codex layouts discover the same companion skill", a
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 async function verify(client: Client) {
+  assert.equal(client.getServerVersion()?.version, (await json("package.json")).version);
   assert.deepEqual((await client.listTools()).tools.map(t => t.name), ["get_feed"]);
   assert.equal(client.getServerCapabilities()?.resources, undefined);
   assert.ok((await client.listTools()).tools[0]!.inputSchema.properties?.cursor);
