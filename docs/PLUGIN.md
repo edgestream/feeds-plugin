@@ -10,7 +10,7 @@ Feeds packages one read-only MCP service using two manifest pairs:
 The portable manifests declare matching 1.0.0 schemas. `plugin.json` carries
 metadata and the OpenAI-specific `extensions.com.openai.interface` presentation
 metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
-`./.mcp.json` and adds install-surface metadata: Feeds Dev, Edgestream,
+`./.mcp.json` and adds install-surface metadata: Feeds, Edgestream,
 `Communications`, capability `Read`, and prompts for feeds, context and replies.
 Both metadata surfaces reference the same local square logo and composer icon at
 `./assets/feeds-people-waves-128.png`. The asset is kept below 10 kB and
@@ -30,8 +30,8 @@ undocumented plugin-root placeholder, `tsx`, or `node_modules` is required.
 persistent data or `${PLUGIN_DATA}` setting is required. HTTP is a separate
 entry point documented in [MCP.md](MCP.md).
 
-The plugin is available through the Edgestream Lab marketplace as
-`feeds-dev@edgestream-dev`. The marketplace lives in
+The plugin is available through the Edgestream marketplace as `feeds@edgestream`.
+The marketplace lives in
 [`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace),
 separate from this package. It supplies installation and discovery; this
 repository still does not deploy a remote server or install the plugin into a

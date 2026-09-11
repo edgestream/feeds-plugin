@@ -10,8 +10,8 @@ connection.
 ### ChatGPT desktop app
 
 1. Open the **Plugins Directory** in ChatGPT desktop.
-2. Select the **Edgestream Lab** marketplace.
-3. Choose **Feeds Dev** and select **Install**.
+2. Select the **Edgestream** marketplace.
+3. Choose **Feeds** and select **Install**.
 4. Start a new chat and ask, for example: “Read the feed at
    `https://x.com/OpenAI`.”
 
@@ -23,13 +23,13 @@ ask ChatGPT to use Feeds.
 Add the Edgestream marketplace once, then install the plugin:
 
 ```bash
-codex plugin marketplace add edgestream/agent-marketplace --ref development
-codex plugin add feeds-dev@edgestream-dev
+codex plugin marketplace add edgestream/agent-marketplace
+codex plugin add feeds@edgestream
 ```
 
 Confirm that it is enabled with `codex plugin list`, then start a new Codex task
 and ask it to use Feeds. To update the marketplace snapshot later, run
-`codex plugin marketplace upgrade edgestream-dev` and reinstall the plugin if a
+`codex plugin marketplace upgrade edgestream` and reinstall the plugin if a
 new version is available.
 
 For a checkout-local MCP server instead of the plugin, build the project and
