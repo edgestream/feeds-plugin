@@ -1,53 +1,57 @@
 # Feeds Plugin
 
-<p align="left"><em>Read social media feeds.</em></p>
+*Social media feeds for agents.*
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-`feeds` is a [ChatGPT plugin](https://developers.openai.com/plugins),
-[MCP server](https://modelcontextprotocol.io/docs/2026-07-28/learn/server-concepts)
-and stand-alone command-line interface to bring social media feeds to your agents.
+Feeds lets agents read public posts, conversation context, replies, and author
+feeds. Use it as a plugin in ChatGPT or Codex, connect it to other agents over
+MCP, or run it from the command line.
 
 ## Plugin
 
-`feeds` follows the [Agent Plugins Specification](https://agent-plugins.org/specification)
-compatible with various clients like [ChatGPT Desktop App](https://learn.chatgpt.com/docs/app)
-and [codex](https://chatgpt.com/codex/).
+Install the release version from the Edgestream marketplace with Codex CLI:
 
 ```bash
-codex plugin marketplace add edgestream/agent-marketplace --ref development
-codex plugin add feeds-dev@edgestream-dev
+codex plugin marketplace add edgestream/agent-marketplace
+codex plugin add feeds@edgestream
 ```
-
-## MCP
-
-See [MCP.md](docs/MCP.md#get-started) for full setup.
 
 ## CLI
 
-From a local checkout read an X post, its context or answers:
-
-```bash
-npx feeds show 'https://x.com/OpenAI/status/2082577277246972300'
-npx feeds show --context 'https://x.com/OpenAI/status/2082577277246972300'
-npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
-```
-
-Read an author's feed:
-
-```bash
-npx feeds show 'https://x.com/OpenAI'
-```
-
-See [CLI.md](docs/CLI.md) for available options and examples.
-
-## Development
+The CLI requires *Node.js 24* or later. From the repository root of a local
+checkout, install the dependencies:
 
 ```bash
 npm ci
+```
+
+Run the following commands from the same directory. These examples use X:
+
+```bash
+# Read a post.
+npx feeds show 'https://x.com/OpenAI/status/2082577277246972300'
+
+# Read its available conversation context.
+npx feeds show --context 'https://x.com/OpenAI/status/2082577277246972300'
+
+# Read its available replies.
+npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
+
+# Read an author's feed.
+npx feeds show 'https://x.com/OpenAI'
+```
+
+Results are returned as JSON. See the [CLI guide](docs/CLI.md) for supported URLs,
+options, and pagination.
+
+## Development
+
+After installing the dependencies with `npm ci`, build and verify the project:
+
+```bash
 npm run build
 npm run check
 npm test
 ```
 
-See [AGENTS.md](AGENTS.md) for repository guidance and architecture references.
+See [AGENTS.md](AGENTS.md) for contribution guidance, architecture, and instructions
+for adding platforms and providers.
