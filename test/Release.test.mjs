@@ -66,7 +66,9 @@ test("preview is read-only; stable, patch and development preparation are repeat
     const codex = await json(directory, ".codex-plugin/plugin.json");
     assert.equal(portable.name, channel === "stable" ? "feeds" : "feeds-dev");
     assert.equal(codex.name, portable.name);
-    assert.equal(codex.interface.displayName, channel === "stable" ? "Feeds" : "Feeds Dev");
+    const displayName = channel === "stable" ? "Feeds" : "Feeds Dev";
+    assert.equal(portable.extensions["com.openai"].interface.displayName, displayName);
+    assert.equal(codex.interface.displayName, displayName);
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
     assert.match(portable.$schema, /\/1\.0\.0\//);
