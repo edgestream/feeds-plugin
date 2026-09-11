@@ -13,7 +13,7 @@ metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
 `./.mcp.json` and adds install-surface metadata: Feeds Dev, Edgestream,
 `Communications`, capability `Read`, and prompts for feeds, context and replies.
 Both metadata surfaces reference the same local square logo and composer icon at
-`./assets/feeds-people-waves-dark-128.png`. The asset is kept below 10 kB and
+`./assets/feeds-people-waves-128.png`. The asset is kept below 10 kB and
 is copied with the plugin; paths resolve from the installed plugin root. The
 portable manifest's OpenAI extension follows the [official plugin packaging
 specification](https://developers.openai.com/plugins/build/plugins), and the
