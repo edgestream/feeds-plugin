@@ -6,6 +6,7 @@
     "name": "Edgestream"
   },
   "repository": "https://github.com/edgestream/feeds-plugin",
+  "license": "MIT",
   "keywords": [
     "feeds",
     "social-media",
@@ -27,6 +28,9 @@
       "Read feed for https://x.com/OpenAI",
       "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
       "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
-    ]
+    ],
+    "brandColor": "#212121",
+    "composerIcon": "./assets/feeds-people-waves-dark-128.png",
+    "logo": "./assets/feeds-people-waves-dark-128.png"
   }
 }
