@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -16,6 +16,11 @@ test("local npx executes the committed bundle and returns the complete upstream 
     const preload = join(directory, "fetch.mjs");
     await writeFile(preload, `import assert from 'node:assert/strict';
 globalThis.fetch = async (url, options) => {
+  if (new URL(url).origin === 'https://api.fxbsky.app') {
+    const parsed = new URL(url);
+    assert.equal(options.redirect, 'error');
+    return Response.json({ endpoint: parsed.pathname, parameters: [...parsed.searchParams], results: [{ cid: 'raw' }], cursor: null });
+  }
   if (String(url).includes('/profile/')) {
     const parsed = new URL(url);
     assert.equal(parsed.origin + parsed.pathname, 'https://api.fxtwitter.com/2/profile/alice/statuses');
@@ -41,6 +46,19 @@ globalThis.fetch = async (url, options) => {
       assert.match(failure.stderr, /INVALID_INPUT/u);
       return true;
     });
+    const isolatedBundle = join(directory, "feeds-cli.mjs");
+    await copyFile(join(root, "dist/feeds-cli.mjs"), isolatedBundle);
+    for (const [args, endpoint, parameters] of [
+      [["https://bsky.app/profile/bsky.app/post/abc"], "/2/status/bsky.app/abc", []],
+      [["--context", "https://bsky.app/profile/bsky.app/post/abc"], "/2/thread/bsky.app/abc", []],
+      [["--answers", "--cursor", "next+/=&x=1#%", "https://bsky.app/profile/bsky.app/post/abc"], "/2/conversation/bsky.app/abc", [["cursor", "next+/=&x=1#%"]]],
+      [["https://bsky.app/profile/bsky.app"], "/2/profile/bsky.app/statuses", []],
+      [["--answers", "--cursor", "next+/=&x=1#%", "https://bsky.app/profile/bsky.app"], "/2/profile/bsky.app/statuses", [["with_replies", "1"], ["cursor", "next+/=&x=1#%"]]],
+    ] as const) {
+      const result = await exec(process.execPath, [isolatedBundle, "show", ...args], { cwd: directory, env });
+      assert.deepEqual(JSON.parse(result.stdout), { endpoint, parameters, results: [{ cid: "raw" }], cursor: null });
+      assert.equal(result.stderr, "");
+    }
     const manifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
     const lock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8"));
     assert.equal(manifest.bin.feeds, "./dist/feeds-cli.mjs");

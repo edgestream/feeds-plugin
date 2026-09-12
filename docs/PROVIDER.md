@@ -38,7 +38,8 @@ page and does not establish complete coverage.
 
 ## Verification
 
-Run `test/contracts/feedProviderContract.ts` for each provider along with adapter
+Run `test/contracts/feedProviderContract.ts` for each adapter, passing a valid
+platform-specific public source URL as its third argument (X is the default), along with adapter
 coverage of supported URLs/options, complete response preservation, malformed
 JSON, unsafe URLs, transport errors and cancellation. Tests require no live network.
 See the provider README for endpoint behavior and [MCP.md](MCP.md) for the error response format.

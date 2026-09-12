@@ -26,7 +26,7 @@ names need not match; installed plugin identity comes from the manifest.
 Both configurations start `node ./dist/feeds-mcp.mjs`. They omit `cwd` and rely on
 the plugin host starting in the installed plugin root. No
 undocumented plugin-root placeholder, `tsx`, or `node_modules` is required.
-`FEEDS_X_PROVIDER` is intentionally omitted so shared runtime defaults apply. No
+Provider-selection environment variables are intentionally omitted so shared runtime defaults apply. No
 persistent data or `${PLUGIN_DATA}` setting is required. HTTP is a separate
 entry point documented in [MCP.md](MCP.md).
 
@@ -41,7 +41,9 @@ the ChatGPT desktop and Codex CLI installation paths.
 ## Skill packaging
 
 The companion [read-x skill](../skills/read-x/SKILL.md) ships at the portable
-fixed discovery path `skills/read-x/SKILL.md`. The Codex manifest also declares
+fixed discovery path `skills/read-x/SKILL.md`. The companion
+[read-bluesky skill](../skills/read-bluesky/SKILL.md) ships alongside it at
+`skills/read-bluesky/SKILL.md`. The Codex manifest also declares
 `skills: "./skills/"`; both layouts use the same files. Copy the `skills/` directory
 along with manifests and bundles when installing outside the checkout.
 See [SKILL.md](SKILL.md) for activation, argument selection, and behavioral verification.

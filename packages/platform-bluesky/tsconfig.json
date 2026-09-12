@@ -8,18 +8,6 @@
   "references": [
     {
       "path": "../../packages/core"
-    },
-    {
-      "path": "../../packages/application"
-    },
-    {
-      "path": "../../packages/platform-x"
-    },
-    {
-      "path": "../../packages/provider-fxtwitter"
-    },
-    {
-      "path": "../../packages/platform-bluesky"
     }
   ],
   "include": [
