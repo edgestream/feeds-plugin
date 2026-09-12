@@ -2,18 +2,17 @@
 
 *Social media feeds for agents.*
 
-Feeds lets agents read public posts, conversation context, replies, and author
+This plugin lets agents read public posts, conversation context, replies, and author
 feeds from X and Bluesky. Use it as a plugin in ChatGPT or Codex, connect it to other agents over
 MCP, or run it from the command line.
 
 ## Plugin
 
-Install the release version from the Edgestream marketplace with Codex CLI:
+The stable identity is `feeds` / **Feeds**; development uses `feeds-dev` /
+**Feeds Dev**.
 
-```bash
-codex plugin marketplace add edgestream/agent-marketplace
-codex plugin add feeds@edgestream
-```
+See the [marketplace installation guide](https://github.com/edgestream/agent-marketplace#installation)
+for installation, channel selection, and updates.
 
 ## CLI
 

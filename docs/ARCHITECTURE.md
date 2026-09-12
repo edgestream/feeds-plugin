@@ -1,6 +1,6 @@
 # Architecture
 
-Feeds uses Node.js 24, TypeScript, ESM, and npm workspaces. TypeScript project
+This project uses Node.js 24, TypeScript, ESM, and npm workspaces. TypeScript project
 references check package boundaries. Node's test runner executes TypeScript tests
 through tsx; esbuild produces the committed CLI and MCP bundles.
 

@@ -1,6 +1,6 @@
 # Plugin packaging
 
-Feeds packages one read-only MCP service using two manifest pairs:
+This plugin packages one read-only MCP service using two manifest pairs:
 
 | Target | Files | Contract |
 | --- | --- | --- |
@@ -10,18 +10,17 @@ Feeds packages one read-only MCP service using two manifest pairs:
 The portable manifests declare matching 1.0.0 schemas. `plugin.json` carries
 metadata and the OpenAI-specific `extensions.com.openai.interface` presentation
 metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
-`./.mcp.json` and adds install-surface metadata: Feeds Dev, Edgestream,
-`Communications`, capability `Read`, and prompts for feeds, context and replies.
+`./.mcp.json` and adds install-surface metadata: a channel-specific display name,
+author, `Communications`, capability `Read`, and prompts for feeds, context and replies.
 Both metadata surfaces reference the same local square logo and composer icon at
 `./assets/feeds-people-waves-128.png`. The asset is kept below 10 kB and
 is copied with the plugin; paths resolve from the installed plugin root. The
 portable manifest's OpenAI extension follows the [official plugin packaging
 specification](https://developers.openai.com/plugins/build/plugins), and the
 asset constraints follow the [official submission error reference](https://developers.openai.com/plugins/deploy/submission-errors#image-errors).
-The development package identity is `feeds-dev`; both manifests use the root
-package version. Stable releases use `feeds` / `Feeds`, following
-[the release procedure](RELEASE.md). Repository and plugin folder
-names need not match; installed plugin identity comes from the manifest.
+Both manifests use the root package version and the channel identity listed in
+[README.md](../README.md#plugin), following [the release procedure](RELEASE.md).
+Repository and plugin folder names need not match; installed plugin identity comes from the manifest.
 
 Both configurations start `node ./dist/feeds-mcp.mjs`. They omit `cwd` and rely on
 the plugin host starting in the installed plugin root. No
@@ -30,13 +29,9 @@ Provider-selection environment variables are intentionally omitted so shared run
 persistent data or `${PLUGIN_DATA}` setting is required. HTTP is a separate
 entry point documented in [MCP.md](MCP.md).
 
-The plugin is available through the Edgestream Lab marketplace as
-`feeds-dev@edgestream-dev`. The marketplace lives in
-[`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace),
-separate from this package. It supplies installation and discovery; this
-repository still does not deploy a remote server or install the plugin into a
-user's account automatically. See the [MCP quickstart](MCP.md#get-started) for
-the ChatGPT desktop and Codex CLI installation paths.
+Marketplace installation, discovery, and updates are documented in
+[`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace#installation).
+This repository owns the installable package; it does not deploy a remote server.
 
 ## Skill packaging
 

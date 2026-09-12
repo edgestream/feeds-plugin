@@ -2,35 +2,12 @@
 
 ## Get started
 
-Feeds is a read-only plugin for public social-media posts, available context,
-replies, and author feeds. Install the plugin to use it; running either MCP
-entry point directly is only needed for local development or a standalone MCP
-connection.
+This plugin provides read-only access to public posts, available context,
+replies, and author feeds. For plugin installation and updates, use the
+[marketplace installation guide](https://github.com/edgestream/agent-marketplace#installation).
+The plugin includes the [companion skills](SKILL.md).
 
-### ChatGPT desktop app
-
-1. Open the **Plugins Directory** in ChatGPT desktop.
-2. Select the **Edgestream Lab** marketplace.
-3. Choose **Feeds Dev** and select **Install**.
-4. Start a new chat and ask, for example: “Read the feed at
-   `https://x.com/OpenAI`.”
-
-The plugin also installs the [read-x and read-bluesky skills](SKILL.md). For explicit retrieval,
-ask ChatGPT to use Feeds.
-
-### Codex CLI
-
-Add the Edgestream marketplace once, then install the plugin:
-
-```bash
-codex plugin marketplace add edgestream/agent-marketplace --ref development
-codex plugin add feeds-dev@edgestream-dev
-```
-
-Confirm that it is enabled with `codex plugin list`, then start a new Codex task
-and ask it to use Feeds. To update the marketplace snapshot later, run
-`codex plugin marketplace upgrade edgestream-dev` and reinstall the plugin if a
-new version is available.
+### Standalone MCP connection
 
 For a checkout-local MCP server instead of the plugin, build the project and
 register its stdio entry point from the repository root:

@@ -7,10 +7,14 @@ Commit and PR conventions remain in [REPOSITORY.md](REPOSITORY.md) and
 
 ## Branches, versions, and channels
 
-| Purpose | Branch | Plugin identity / display name | Version example |
+| Purpose | Branch | Channel | Version example |
 | --- | --- | --- | --- |
-| Development | `main` | `feeds-dev` / `Feeds Dev` | `0.2.0` |
-| Maintenance of the 0.1 line | `release/0.1` | `feeds` / `Feeds` | `0.1.0`, then `0.1.1` |
+| Development | `main` | Development | `0.2.0` |
+| Maintenance of the 0.1 line | `release/0.1` | Stable | `0.1.0`, then `0.1.1` |
+
+Channel identities are listed once in [README.md](../README.md#plugin) and set
+by the preparation script. Guides describe both channels and stay unchanged
+when cutting a release or advancing development.
 
 Use plain `major.minor.patch` versions, without a `v` prefix, prerelease suffix,
 or build metadata. Create one maintenance branch per released minor line during
@@ -50,8 +54,10 @@ bundles without reading package metadata at runtime. Rebuild all three committed
 
 Plugin/MCP schema version `1.0.0`, dependency constraints, protocol identifiers,
 test-client versions, and historical documentation examples are independent
-versions. Do not bump them with the product version. Release-specific setup and
-release notes need manual review; the script does not rewrite documentation.
+versions. Do not bump them with the product version. Review release notes and
+documentation for actual behavior changes; a version or
+channel change alone does not require documentation edits. The script does not
+rewrite documentation.
 
 ```bash
 # Preview the initial stable release preparation; no writes.
@@ -89,9 +95,8 @@ unrelated work.
    scope and the release tooling. Resolve outstanding release blockers.
 2. Create `release/0.1` at that commit. Prepare changes on a short-lived
    `codex/` branch targeting it; use the next minor line for later minor releases.
-3. Run the stable preparation script. Review the diff, build bundles, and update
-   the stable installation examples in README/MCP documentation and the affected
-   identity/discovery statements in PLUGIN documentation. Include known provider
+3. Run the stable preparation script. Review the diff and build bundles.
+   Update documentation only for changed behavior, and include known provider
    limitations and user-visible changes in release notes.
 4. Run the verification gates below. Review and merge the preparation PR, then
    rerun the gates on the exact merged commit in a clean checkout.
@@ -100,8 +105,8 @@ unrelated work.
    immutable releases before publishing; finish assets in a draft first.
 6. Promote the published tag through a separate marketplace PR and verify a real
    installation. A published GitHub release alone is not marketplace promotion.
-7. Independently open the development version PR for `0.2.0` / `feeds-dev` on
-   `main`, rebuild and verify it. This can proceed as soon as the release line
+7. Independently open the development version PR for `0.2.0` on `main` using
+   the development channel, rebuild and verify it. This can proceed as soon as the release line
    has been cut; marketplace publication need not block development.
 
 ## Verification gates
@@ -142,28 +147,10 @@ credentials for the separate marketplace repository.
 
 ## Marketplace promotion and installation
 
-In `edgestream/agent-marketplace`, update `.agents/plugins/marketplace.json`:
-
-- Stable marketplace branch `main`, marketplace `edgestream`: plugin `feeds`,
-  repository URL `https://github.com/edgestream/feeds-plugin.git`, `source.ref`
-  set to the published tag such as `0.1.0`, never the moving maintenance branch.
-- Development marketplace branch `development`, marketplace `edgestream-dev`:
-  retain plugin `feeds-dev` with `source.ref` set to `main`.
-
-The stable marketplace PR must verify that the referenced release exists and
-that both manifests at its commit declare the matching identity and version.
-Preserve unrelated entries and existing policy fields. Review the current stable
-reference before promotion: a patch to an older line must not replace a newer
-stable minor release. Promote it only if that line is still the selected stable
-channel, or if an explicit rollback has been approved.
-
-After promotion, verify fresh installation and update from the previous stable
-version in supported hosts. Confirm displayed identity/version, MCP startup and
-an actual tool call, plus companion skill discovery. For the first release, also
-verify the transition from `feeds-dev` to `feeds`; a different plugin identity
-must not be assumed to migrate installations or settings automatically. Record
-host/version, release tag/commit, and results. Host skill behavior evidence remains
-in [SKILL.md](SKILL.md).
+Follow the [marketplace promotion guide](https://github.com/edgestream/agent-marketplace/blob/main/docs/PROMOTION.md)
+for listing changes, channel policy, installation/update verification, and
+marketplace recovery. Hand over the published tag and exact verified commit.
+Host skill behavior evidence remains in [SKILL.md](SKILL.md).
 
 ## Backports, retries, and rollback
 
@@ -180,10 +167,6 @@ objects and fail on conflicting commits or versions. Do not recreate or overwrit
 a published release. If marketplace promotion fails after publication, retry only
 promotion against the existing release.
 
-For a defective release, document the problem, restore the previous known-good
-marketplace reference through a PR if needed, and publish the correction under a
-new patch version. Reverting the marketplace does not downgrade already installed
-clients: verify and communicate the host-specific recovery procedure. For the
-first stable release, there may be no previous stable version to restore; withdraw
-the broken listing until a corrected version is available. Keep published tags
-and release history intact.
+For a defective release, document the problem and publish the correction under a
+new patch version. Follow the marketplace promotion guide for listing rollback
+and client recovery. Keep published tags and release history intact.

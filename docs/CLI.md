@@ -54,7 +54,7 @@ and `mobile.twitter.com`. Post paths are `/<handle>/status/<numeric-id>` or
 optional trailing slash. Handles contain 1–15 ASCII letters, digits, or underscores;
 known navigation paths such as `/home` and `/search` are rejected. Query strings
 and fragments are ignored. Credentials, nonstandard ports, other hosts, bare IDs,
-bare handles, and internal Feeds URIs are rejected. The [MCP interface](MCP.md)
+bare handles, and internal plugin URIs are rejected. The [MCP interface](MCP.md)
 accepts the same public URLs. Bluesky forms are listed [below](#bluesky-urls).
 
 The CLI prints the provider result, indented with two spaces and a trailing
