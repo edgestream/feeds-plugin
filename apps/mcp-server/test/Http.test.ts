@@ -9,7 +9,7 @@ import { createFeedsMcpHttpServer, createFeedsMcpServer } from "../src/index.js"
 
 test("HTTP protocol discovery, retrieval, validation and bounded bodies", async () => {
   let calls = 0;
-  const feeds = createFeed({ xProvider: "fxtwitter" }, { fetch: async () => { calls++; return Response.json({ status: { id: "123", text: "hello" } }); } });
+  const feeds = createFeed({ xProvider: "fxembed" }, { fetch: async () => { calls++; return Response.json({ status: { id: "123", text: "hello" } }); } });
   const server = createFeedsMcpHttpServer(() => createFeedsMcpServer({ feeds }), { host: "127.0.0.1", port: 0, allowedHosts: ["127.0.0.1"], allowedOrigins: [], bodyLimit: 4096 });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
@@ -48,7 +48,7 @@ test("disconnecting an HTTP caller aborts upstream work", { timeout: 5000 }, asy
   let started!: () => void, aborted!: () => void;
   const didStart = new Promise<void>(resolve => { started = resolve; });
   const didAbort = new Promise<void>(resolve => { aborted = resolve; });
-  const feeds = createFeed({ xProvider: "fxtwitter" }, { fetch: async (_url, options) => new Promise((_resolve, reject) => {
+  const feeds = createFeed({ xProvider: "fxembed" }, { fetch: async (_url, options) => new Promise((_resolve, reject) => {
     options!.signal!.addEventListener("abort", () => { aborted(); reject(new Error("aborted")); }, { once: true });
     started();
   }) });

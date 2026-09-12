@@ -40,7 +40,7 @@ It manages:
   matching display names selected by channel.
 - `apps/mcp-server/src/version.ts`: the default MCP initialization version.
   The server's explicit version override remains available to callers.
-- `packages/provider-fxtwitter/src/version.ts`: the version in the upstream
+- `packages/provider-fxembed/src/version.ts`: the version in the upstream
   `feeds-plugin/<version> (read-only)` User-Agent.
 
 Both TypeScript version files are generated, committed, and imported locally.

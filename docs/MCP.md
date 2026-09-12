@@ -52,7 +52,7 @@ X and Bluesky public URLs are supported. Bare handles, IDs and internal URIs are
 context; `answers` requests replies to a post or includes replies written by an
 author in that author's feed. Providers validate supported combinations and
 determine available coverage. See [CLI.md](CLI.md) for supported URL forms and
-the [provider documentation](../packages/provider-fxtwitter/README.md) for
+the [provider documentation](../packages/provider-fxembed/README.md) for
 endpoint mappings, restrictions, and known upstream limitations.
 
 Each call makes one upstream request. Successful results contain:
@@ -80,7 +80,7 @@ Bluesky examples use the same tool and options:
 
 The record key illustrates syntax, not a guaranteed live post. For allowed actor
 forms, see [Bluesky URLs](CLI.md#bluesky-urls); for continuation coverage, see
-[Bluesky provider limitations](../packages/provider-fxtwitter/README.md#bluesky-limitations).
+[Bluesky provider limitations](../packages/provider-fxembed/README.md#bluesky-limitations).
 
 The server exposes no resources, resource links or resource templates. The tool
 advertises read-only, non-destructive, idempotent and open-world annotations.

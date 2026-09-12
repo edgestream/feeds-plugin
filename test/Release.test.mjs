@@ -72,7 +72,7 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
     assert.match(portable.$schema, /\/1\.0\.0\//);
-    for (const file of ["apps/mcp-server/src/version.ts", "packages/provider-fxtwitter/src/version.ts"]) {
+    for (const file of ["apps/mcp-server/src/version.ts", "packages/provider-fxembed/src/version.ts"]) {
       assert.ok((await readFile(join(directory, file), "utf8")).includes(`export const version = "${version}";`));
     }
   }

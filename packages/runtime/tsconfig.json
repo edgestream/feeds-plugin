@@ -16,7 +16,7 @@
       "path": "../../packages/platform-x"
     },
     {
-      "path": "../../packages/provider-fxtwitter"
+      "path": "../../packages/provider-fxembed"
     },
     {
       "path": "../../packages/platform-bluesky"
