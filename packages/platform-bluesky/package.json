@@ -1,0 +1,11 @@
+{
+  "name": "@edgestream/feeds-platform-bluesky",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@edgestream/feeds-core": "file:../../packages/core"
+  }
+}

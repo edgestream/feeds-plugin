@@ -3,7 +3,7 @@
 *Social media feeds for agents.*
 
 Feeds lets agents read public posts, conversation context, replies, and author
-feeds. Use it as a plugin in ChatGPT or Codex, connect it to other agents over
+feeds from X and Bluesky. Use it as a plugin in ChatGPT or Codex, connect it to other agents over
 MCP, or run it from the command line.
 
 ## Plugin
@@ -24,7 +24,7 @@ checkout, install the dependencies:
 npm ci
 ```
 
-Run the following commands from the same directory. These examples use X:
+Run the following commands from the same directory. These examples use X and Bluesky:
 
 ```bash
 # Read a post.
@@ -38,6 +38,9 @@ npx feeds show --answers 'https://x.com/OpenAI/status/2082577277246972300'
 
 # Read an author's feed.
 npx feeds show 'https://x.com/OpenAI'
+
+# Read a Bluesky author's feed.
+npx feeds show 'https://bsky.app/profile/bsky.app'
 ```
 
 Results are returned as JSON. See the [CLI guide](docs/CLI.md) for supported URLs,

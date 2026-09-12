@@ -9,6 +9,7 @@
     "@edgestream/feeds-core": "file:../../packages/core",
     "@edgestream/feeds-application": "file:../../packages/application",
     "@edgestream/feeds-platform-x": "file:../../packages/platform-x",
-    "@edgestream/feeds-provider-fxtwitter": "file:../../packages/provider-fxtwitter"
+    "@edgestream/feeds-provider-fxtwitter": "file:../../packages/provider-fxtwitter",
+    "@edgestream/feeds-platform-bluesky": "file:../../packages/platform-bluesky"
   }
 }

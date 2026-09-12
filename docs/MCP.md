@@ -15,7 +15,7 @@ connection.
 4. Start a new chat and ask, for example: “Read the feed at
    `https://x.com/OpenAI`.”
 
-The plugin also installs the [read-x skill](SKILL.md). For explicit retrieval,
+The plugin also installs the [read-x and read-bluesky skills](SKILL.md). For explicit retrieval,
 ask ChatGPT to use Feeds.
 
 ### Codex CLI
@@ -48,7 +48,7 @@ routing skill.
 ## Tool
 
 `get_feed(source, context?, answers?, cursor?)` accepts a complete public post or profile URL.
-Bare handles, IDs and internal URIs are unsupported. `context` requests post
+X and Bluesky public URLs are supported. Bare handles, IDs and internal URIs are unsupported. `context` requests post
 context; `answers` requests replies to a post or includes replies written by an
 author in that author's feed. Providers validate supported combinations and
 determine available coverage. See [CLI.md](CLI.md) for supported URL forms and
@@ -69,6 +69,18 @@ For profiles, use `get_feed({source: "https://x.com/OpenAI", cursor: "<cursor.bo
 with the same options used for the first page. To include authored replies, use
 `get_feed({source: "https://x.com/OpenAI", answers: true})` and retain
 `answers: true` when passing the returned cursor on subsequent calls.
+
+Bluesky examples use the same tool and options:
+
+```json
+{"source":"https://bsky.app/profile/bsky.app","answers":true}
+{"source":"https://bsky.app/profile/bsky.app/post/3l6xyz","context":true}
+{"source":"https://bsky.app/profile/bsky.app/post/3l6xyz","answers":true,"cursor":"<cursor.bottom>"}
+```
+
+The record key illustrates syntax, not a guaranteed live post. For allowed actor
+forms, see [Bluesky URLs](CLI.md#bluesky-urls); for continuation coverage, see
+[Bluesky provider limitations](../packages/provider-fxtwitter/README.md#bluesky-limitations).
 
 The server exposes no resources, resource links or resource templates. The tool
 advertises read-only, non-destructive, idempotent and open-world annotations.

@@ -39,6 +39,11 @@ async function installed() {
   for (const name of ["feeds-mcp.mjs", "feeds-mcp-http.mjs"]) await copyFile(join(root, "dist", name), join(directory, "dist", name));
   await writeFile(join(directory, "fetch.mjs"), `globalThis.fetch = async (url, options) => {
     const parsed = new URL(url);
+    if (parsed.origin === 'https://api.fxbsky.app') {
+      const supported = ['/2/status/bsky.app/abc', '/2/thread/bsky.app/abc', '/2/conversation/bsky.app/abc', '/2/profile/bsky.app/statuses'];
+      if (!supported.includes(parsed.pathname)) throw new Error('Unexpected Bluesky endpoint');
+      return Response.json({ endpoint: parsed.pathname, parameters: [...parsed.searchParams], results: [{ at_uri: 'at://raw', cid: 'raw', unknown: [null, true] }], cursor: { bottom: 'next+/=&x=1#%' } });
+    }
     if (parsed.pathname === '/2/conversation/123' || parsed.pathname === '/2/profile/openai/statuses') {
       const cursor = parsed.searchParams.get('cursor');
       if (cursor !== null && cursor !== 'next+/=&x=1#%') throw new Error('Unexpected cursor');
@@ -67,6 +72,8 @@ test("installed portable and Codex layouts discover the same companion skill", a
     for (const skillRoot of ["skills", codex.skills]) {
       const folders = await readdir(join(directory, skillRoot));
       assert.ok(folders.includes("read-x"));
+      assert.ok(folders.includes("read-bluesky"));
+      assert.equal(await readFile(join(directory, skillRoot, "read-bluesky/SKILL.md"), "utf8"), await readFile(join(root, "skills/read-bluesky/SKILL.md"), "utf8"));
       const skill = await readFile(join(directory, skillRoot, "read-x/SKILL.md"), "utf8");
       assert.match(skill, /^---\nname: read-x\ndescription: [^\n]+\n---\n/);
       assert.equal(skill, await readFile(join(root, "skills/read-x/SKILL.md"), "utf8"));
@@ -78,6 +85,23 @@ async function verify(client: Client) {
   assert.deepEqual((await client.listTools()).tools.map(t => t.name), ["get_feed"]);
   assert.equal(client.getServerCapabilities()?.resources, undefined);
   assert.ok((await client.listTools()).tools[0]!.inputSchema.properties?.cursor);
+  for (const [source, options, endpoint, parameters] of [
+    ["https://bsky.app/profile/bsky.app/post/abc", {}, "/2/status/bsky.app/abc", []],
+    ["https://bsky.app/profile/bsky.app/post/abc", { context: true }, "/2/thread/bsky.app/abc", []],
+    ["https://bsky.app/profile/bsky.app/post/abc", { answers: true }, "/2/conversation/bsky.app/abc", []],
+    ["https://bsky.app/profile/bsky.app/post/abc", { answers: true, context: true, cursor: "next+/=&x=1#%" }, "/2/conversation/bsky.app/abc", [["cursor", "next+/=&x=1#%"]]],
+    ["https://bsky.app/profile/bsky.app", {}, "/2/profile/bsky.app/statuses", []],
+    ["https://bsky.app/profile/bsky.app", { cursor: "next+/=&x=1#%" }, "/2/profile/bsky.app/statuses", [["cursor", "next+/=&x=1#%"]]],
+    ["https://bsky.app/profile/bsky.app", { answers: true, cursor: "next+/=&x=1#%" }, "/2/profile/bsky.app/statuses", [["with_replies", "1"], ["cursor", "next+/=&x=1#%"]]],
+  ] as const) {
+    const result = await client.callTool({ name: "get_feed", arguments: { source, ...options } });
+    assert.equal(result.isError, undefined);
+    const expected = { endpoint, parameters, results: [{ at_uri: "at://raw", cid: "raw", unknown: [null, true] }], cursor: { bottom: "next+/=&x=1#%" } };
+    assert.deepEqual(result.structuredContent, expected);
+    assert.deepEqual(JSON.parse((result.content as { text: string }[])[0]!.text), expected);
+  }
+  const rejectedBluesky = await client.callTool({ name: "get_feed", arguments: { source: "https://bsky.app/profile/bsky.app", context: true } });
+  assert.equal(rejectedBluesky.isError, true);
   const source = "https://x.com/a/status/123";
   const first = await client.callTool({ name: "get_feed", arguments: { source, answers: true } });
   assert.equal(first.isError, undefined);
@@ -154,6 +178,7 @@ test("HTTP bundle rejects invalid deployment configuration before listening", as
     { FEEDS_MCP_HTTP_PORT: "0" },
     { FEEDS_MCP_HTTP_PUBLIC_URL: "https://user:secret@example.test/mcp" },
     { FEEDS_X_PROVIDER: "unknown" },
+    { FEEDS_BLUESKY_PROVIDER: "unknown" },
   ]) {
     const child = spawn(process.execPath, [join(root, "dist/feeds-mcp-http.mjs")], { env: { ...getDefaultEnvironment(), ...env }, stdio: ["ignore", "pipe", "pipe"] });
     let log = "";

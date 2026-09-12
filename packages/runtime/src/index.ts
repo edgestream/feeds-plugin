@@ -1,12 +1,13 @@
 import { FeedError, type FeedProvider } from "@edgestream/feeds-core";
 import { FeedService } from "@edgestream/feeds-application";
+import { BlueskyPlatform } from "@edgestream/feeds-platform-bluesky";
 import { XPlatform } from "@edgestream/feeds-platform-x";
-import { FxTwitterProvider, type FxTwitterOptions } from "@edgestream/feeds-provider-fxtwitter";
+import { FxTwitterProvider, FxBlueskyProvider, type FxTwitterOptions } from "@edgestream/feeds-provider-fxtwitter";
 
-export interface Configuration { readonly xProvider: string }
+export interface Configuration { readonly xProvider: string; readonly blueskyProvider?: string }
 
 export function readConfiguration(env: Readonly<Record<string, string | undefined>> = process.env): Configuration {
-  return { xProvider: env.FEEDS_X_PROVIDER ?? "fxtwitter" };
+  return { xProvider: env.FEEDS_X_PROVIDER ?? "fxtwitter", blueskyProvider: env.FEEDS_BLUESKY_PROVIDER ?? "fxtwitter" };
 }
 
 export function createFeed(configuration: Configuration = readConfiguration(), options: FxTwitterOptions = {}): FeedService {
@@ -15,5 +16,7 @@ export function createFeed(configuration: Configuration = readConfiguration(), o
   ]);
   const createProvider = providers.get(configuration.xProvider);
   if (!createProvider) throw new FeedError("CONFIGURATION", `Unknown X provider: ${configuration.xProvider}.`);
-  return new FeedService([new XPlatform()], [createProvider()]);
+  const blueskyProvider = configuration.blueskyProvider ?? "fxtwitter";
+  if (blueskyProvider !== "fxtwitter") throw new FeedError("CONFIGURATION", `Unknown Bluesky provider: ${blueskyProvider}.`);
+  return new FeedService([new XPlatform(), new BlueskyPlatform()], [createProvider(), new FxBlueskyProvider(options)]);
 }

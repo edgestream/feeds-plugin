@@ -1,5 +1,5 @@
 import { FeedError, type JsonObject, type FeedProvider, type FeedOptions, type RequestContext } from "@edgestream/feeds-core";
-import { version } from "./version.js";
+import { request } from "./request.js";
 
 export interface FxTwitterOptions {
   readonly fetch?: typeof globalThis.fetch;
@@ -34,26 +34,9 @@ export class FxTwitterProvider implements FeedProvider {
     if (!post && options.answers) parameters.set("with_replies", "1");
     if (options.cursor !== undefined) parameters.set("cursor", options.cursor);
     const query = parameters.size ? `?${parameters}` : "";
-    return this.request(`${path}${query}`, context);
+    return request(this.fetch, this.platform, `${path}${query}`, context);
   }
 
-  private async request(path: string, context: RequestContext): Promise<JsonObject> {
-    if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
-    try {
-      const response = await this.fetch(`https://api.fxtwitter.com/2/${path}`, {
-        headers: { Accept: "application/json", "User-Agent": `feeds-plugin/${version} (read-only)` },
-        redirect: "error",
-        ...(context.signal ? { signal: context.signal } : {}),
-      });
-      if (response.status === 404) throw new FeedError("NOT_FOUND", "fxTwitter returned HTTP 404.");
-      if (response.status === 429) throw new FeedError("RATE_LIMITED", "fxTwitter returned HTTP 429.");
-      if (!response.ok) throw new FeedError("UPSTREAM", `fxTwitter returned HTTP ${response.status}.`);
-      return await response.json();
-    } catch (cause) {
-      if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause });
-      if (cause instanceof FeedError) throw cause;
-      if (cause instanceof SyntaxError) throw new FeedError("INVALID_RESPONSE", cause.message, { cause });
-      throw new FeedError("UPSTREAM", cause instanceof Error ? cause.message : "fxTwitter request failed.", { cause });
-    }
-  }
 }
+
+export { FxBlueskyProvider } from "./bluesky.js";

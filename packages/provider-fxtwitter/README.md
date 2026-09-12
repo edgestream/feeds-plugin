@@ -98,3 +98,68 @@ As a control, author-statuses pagination succeeded across three CLI calls with
 58 distinct post IDs. Articles pagination returned HTTP 200 across three direct
 calls but no entries. The conversation failure does not justify disabling cursor
 forwarding generally or converting errors into empty successful pages.
+
+## Bluesky
+
+The same package exports `FxBlueskyProvider` for platform `bluesky`, provider ID
+`fxtwitter`. It shares only HTTP transport with the X adapter; both implement the
+single-platform provider contract and validate public URLs independently.
+Runtime selects each platform's adapter explicitly. The fixed Bluesky API root is
+`https://api.fxbsky.app/2/`:
+
+| URL/options | Endpoint |
+| --- | --- |
+| Post | `status/{actor}/{rkey}` |
+| Post with `context` | `thread/{actor}/{rkey}` |
+| Post with `answers`, optionally `context` | `conversation/{actor}/{rkey}` |
+| Author profile | `profile/{actor}/statuses` |
+| Author profile with `answers` | `profile/{actor}/statuses?with_replies=1` |
+
+Public URL syntax is documented in [CLI.md](../../docs/CLI.md#bluesky-urls).
+Domain handles are lowercased; DIDs and record keys retain case. Actor and record
+key are encoded as individual path segments. There is no local identity lookup.
+Profile context is rejected. For posts, answers takes precedence over context.
+Profile answers includes authored replies through `with_replies=1`; otherwise the
+upstream uses `posts_no_replies`. This is not a replies-only feed.
+
+An explicit nonempty cursor is supported for profiles and posts with answers,
+including combined context/answers. Pass the previous `cursor.bottom` unchanged
+with the same source/options; it is encoded as a `cursor` query parameter. Empty
+cursors and other endpoint/cursor combinations fail before HTTP. Source query
+strings/fragments never set options. No count, ranking, translation, grouping,
+`since`, or automatic continuation is added.
+
+[Post](https://docs.fxembed.com/api/bluesky/operations/2statushandlerkey/),
+[thread](https://docs.fxembed.com/api/bluesky/operations/2threadhandlerkey/),
+[conversation](https://docs.fxembed.com/api/bluesky/operations/2conversationhandlerkey/),
+and [author statuses](https://docs.fxembed.com/api/bluesky/operations/2profilehandlestatuses/)
+are documented upstream. Parsed responses are returned directly, including
+Bluesky-specific `cid`/`at_uri`, unknown fields, tombstones and body-level codes.
+Shared transport preserves the X error classification and cancellation behavior,
+with `FxBluesky` identifying HTTP diagnostics. A successful response with invalid
+or absent JSON reports `INVALID_RESPONSE`; no empty object is synthesized.
+
+### Bluesky limitations
+
+Author continuation uses the upstream author-feed cursor; `cursor.top` is null.
+Conversation continuation is implemented by FxEmbed over refetched thread slices,
+not a native Bluesky reply cursor. Changing replies or ranking can affect page
+coverage, and large conversations may require large upstream payloads. A page,
+reply count, or absent cursor does not establish complete historical coverage.
+Availability and response shape remain upstream-controlled. Automated injected
+tests establish forwarding/preservation, not live availability.
+
+### Confirmed live Bluesky retrieval and continuation (2026-09-12)
+
+The rebuilt CLI fetched `https://bsky.app/profile/bsky.app` and continued with its
+returned cursor: both pages had code 200 and 20 entries. The same two-page check
+with `--answers` also returned code 200 and 20 entries per page.
+
+For `https://bsky.app/profile/bsky.app/post/3mv3zcjaijk22`, plain retrieval,
+`--context`, and `--answers` each returned code 200. The context response contained
+32 thread entries; the conversation contained 20 replies and a bottom cursor.
+Continuation with that cursor and `--context --answers` returned code 200 and
+another 20 reply entries. Its thread contained one entry, versus 32 on the first
+page, demonstrating that continuation does not repeat the full initial context.
+These are response-entry counts, not distinct-post counts or proof of complete
+coverage. No credentials or live response fixtures are committed.

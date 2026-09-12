@@ -1,0 +1,27 @@
+export const validBlueskyUrls = [
+  "https://bsky.app/profile/bsky.app", "http://bsky.app/profile/ALICE.bsky.social/",
+  "https://bsky.app/profile/xn--bcher-kva.example/post/AbC_~:.-09?cursor=ignored#fragment",
+  "https://bsky.app/profile/did:plc:z72i7hdynmk6r22z27h6tvur",
+  "https://bsky.app/profile/did:plc:z72i7hdynmk6r22z27h6tvur/post/3l6xyz/",
+  "https://bsky.app/profile/did:web:Example.com/post/AbC",
+];
+export const invalidBlueskyUrls = [
+  "https://bsky.app/", "https://bsky.app/profile/alice", "https://bsky.app/profile/@alice.test",
+  "https://bsky.app/profile/a..test", "https://bsky.app/profile/-a.test", "https://bsky.app/profile/a-.test",
+  "https://bsky.app/profile/a.123", "https://bsky.app/profile/a.test.",
+  "https://bsky.app/profile/" + "a".repeat(64) + ".test",
+  "https://bsky.app/profile/" + ("a".repeat(63) + ".").repeat(4) + "test",
+  "https://bsky.app/profile/did:plc:short", "https://bsky.app/profile/did:plc:Z72i7hdynmk6r22z27h6tvur",
+  "https://bsky.app/profile/did:web:localhost", "https://bsky.app/profile/did:web:example.com%3A443",
+  "https://bsky.app/profile/did:web:example.com:user", "https://bsky.app/profile/did:key:abc", "https://bsky.app/profile/alice.test/post/",
+  "https://bsky.app/profile/alice.test/post/" + "a".repeat(513),
+  "https://bsky.app/profile/alice.test/post/a%2Fb", "https://bsky.app/profile/alice.test/post/a%3Fb",
+  "https://bsky.app/profile/alice.test/post/a%23b", "https://bsky.app/profile/alice.test/post/%00",
+  "https://bsky.app/profile/alice.test/post/abc/photo/1", "https://bsky.app/profile/alice.test/feed/abc",
+  "https://bsky.app/profile/alice.test/likes", "https://bsky.app/profile/alice.test//",
+  "https://bsky.app/profile/alice%2Etest", "https://bsky.app/profile/ü.test",
+  "https://user:pass@bsky.app/profile/alice.test", "https://bsky.app:444/profile/alice.test",
+  "ftp://bsky.app/profile/alice.test", "https://bsky.app.evil.test/profile/alice.test",
+  "https://www.bsky.app/profile/alice.test", "https://localhost/profile/alice.test",
+  "at://alice.test/app.bsky.feed.post/abc",
+];

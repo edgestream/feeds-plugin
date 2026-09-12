@@ -90,3 +90,23 @@ This is a maintainer-reported result; per-run traces, environment versions, and
 repeat counts are not recorded here. It does not guarantee activation across
 other hosts or models. Automated isolated-install checks separately verify file
 discovery for both layouts and MCP calls against injected upstream responses.
+
+## Bluesky routing
+
+The companion [read-bluesky skill](../skills/read-bluesky/SKILL.md) routes requests
+to read, show, summarize, or explain an `https://bsky.app` URL through Feeds.
+It preserves the source and applies context, answers, and continuation options
+as requested. It retains the same explicit-tool-choice, editing-only, failure,
+and coverage rules as read-x. Both skills ship without renaming read-x.
+
+Apply the evaluation procedure above to Bluesky profile and post URLs, including
+DID actors: plain post/profile retrieval, post context, post replies, authored
+replies, and continuation with the same source/options and prior cursor.bottom.
+Negative cases include editing-only prompts, explicit tool restrictions, custom
+feed URLs, credentials, foreign hosts and unavailable tools. Invalid URLs must
+not be rewritten to bypass validation.
+
+As of 2026-09-12, fresh installed-plugin model-selection runs for read-bluesky
+have not been performed. Deterministic packaging tests verify both discovery
+layouts and explicit Bluesky calls through stdio and HTTP bundles; these do not
+establish implicit model routing.
