@@ -39,20 +39,26 @@ Documentation is part of the implementation, not a follow-up task.
 
 | Document | Owns; update when this changes |
 | --- | --- |
-| [README.md](README.md) | End-user introduction, quick setup, and minimal examples. Update for changes to getting started, not every new option or provider capability. |
+| [README.md](README.md) | End-user introduction, channel identities, links to marketplace installation, local CLI setup, and minimal examples. Update for changes to getting started, not every new option or provider capability. |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Package responsibilities, dependency direction, composition, shared runtime configuration, and cross-package data-flow invariants. Provider endpoint or option support alone is not an architectural change. |
 | [PROVIDER.md](docs/PROVIDER.md) | Shared provider contract, extension requirements, and reusable verification obligations. Update when requirements for providers change, not when one provider supports another option combination. |
 | Provider package README (`packages/provider-<name>/README.md`) | That provider's supported combinations, upstream endpoint mapping, response details, and upstream limitations. This is the authoritative home for provider-specific behavior. |
 | [CLI.md](docs/CLI.md) | CLI syntax, supported public URL forms shared with MCP, user-visible option semantics, examples, output, and exit codes. Link to shared runtime configuration. Describe how users invoke affected behavior; link to provider details. |
 | [MCP.md](docs/MCP.md) | MCP setup, tool inputs and results, user-visible option semantics, errors, and transports. Describe how clients invoke affected behavior; link to provider details. |
 | [PLUGIN.md](docs/PLUGIN.md) | Manifests, plugin identity, packaging, discovery, and installation layout. Rebuilding bundles alone does not require a documentation edit. |
-| [RELEASE.md](docs/RELEASE.md) | Release preparation, version synchronization, branches and tags, publication gates, marketplace promotion, and backports. |
+| [RELEASE.md](docs/RELEASE.md) | Release preparation, version synchronization, branches and tags, publication gates, marketplace handoff, and backports. |
 | [SKILL.md](docs/SKILL.md) | Skill activation scope, tool/argument routing, evaluation procedure, and recorded evidence. Executable model instructions live in `skills/<name>/SKILL.md`; packaging stays in PLUGIN.md. |
 | [AGENTS.md](AGENTS.md), [REPOSITORY.md](docs/REPOSITORY.md), [ISSUES.md](docs/ISSUES.md) | Agent workflow, Git conventions, and GitHub issue/PR conventions, respectively. |
 
 - Update only documents whose owned behavior or requirements change, or whose
   existing statements become incorrect. A small change may need only one document;
   there is no required minimum set of documentation edits.
+- Marketplace installation, update, and promotion guides belong in
+  `edgestream/agent-marketplace`; link there instead of duplicating instructions.
+  Name concrete channel identities only in README.md prose. Other guides and
+  skills refer to this plugin or its channel; preserve technical identifiers in
+  commands, paths, configuration, and protocol examples. A channel/version switch
+  alone must not require guide edits.
 - Keep detailed behavior in its authoritative document. Other documents should
   describe only their own interface implications and link to that detail instead
   of repeating endpoint mappings, limitations, or capability lists.
