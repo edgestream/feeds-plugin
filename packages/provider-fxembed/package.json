@@ -1,5 +1,5 @@
 {
-  "name": "@edgestream/feeds-provider-fxtwitter",
+  "name": "@edgestream/feeds-provider-fxembed",
   "version": "0.2.0",
   "private": true,
   "type": "module",

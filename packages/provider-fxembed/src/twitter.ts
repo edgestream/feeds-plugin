@@ -1,16 +1,13 @@
 import { FeedError, type JsonObject, type FeedProvider, type FeedOptions, type RequestContext } from "@edgestream/feeds-core";
+import type { FxEmbedOptions } from "./options.js";
 import { request } from "./request.js";
 
-export interface FxTwitterOptions {
-  readonly fetch?: typeof globalThis.fetch;
-}
-
 export class FxTwitterProvider implements FeedProvider {
-  readonly id = "fxtwitter";
+  readonly id = "fxembed";
   readonly platform = "x";
   private readonly fetch: typeof globalThis.fetch;
 
-  constructor(options: FxTwitterOptions = {}) {
+  constructor(options: FxEmbedOptions = {}) {
     this.fetch = options.fetch ?? globalThis.fetch;
   }
 
@@ -38,5 +35,3 @@ export class FxTwitterProvider implements FeedProvider {
   }
 
 }
-
-export { FxBlueskyProvider } from "./bluesky.js";

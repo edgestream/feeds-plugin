@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const runtimeFiles = [
   "apps/mcp-server/src/version.ts",
-  "packages/provider-fxtwitter/src/version.ts",
+  "packages/provider-fxembed/src/version.ts",
 ];
 const usage = "Usage: npm run release -- <major.minor.patch> --channel <stable|dev> [--write|--check]";
 

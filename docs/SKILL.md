@@ -5,7 +5,7 @@ and behavioral verification. The executable instructions live in
 [skills/read-x/SKILL.md](../skills/read-x/SKILL.md); change them when the model's
 instructions need to change. Manifest discovery and installation layout belong in
 [PLUGIN.md](PLUGIN.md#skill-packaging), tool semantics in [MCP.md](MCP.md#tool),
-and upstream behavior in the [provider README](../packages/provider-fxtwitter/README.md).
+and upstream behavior in the [provider README](../packages/provider-fxembed/README.md).
 
 ## Activation and routing
 

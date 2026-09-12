@@ -25,7 +25,7 @@ Options may precede or follow the URL. `--context` requests context for a post.
 `--answers` requests replies to a post or includes replies written by an author
 in that author's feed. These options request available content, not complete
 coverage or a replies-only result. Providers validate supported combinations;
-see the [provider documentation](../packages/provider-fxtwitter/README.md) for
+see the [provider documentation](../packages/provider-fxembed/README.md) for
 endpoint mappings and restrictions.
 Use `--cursor` with `--answers` and the same post URL to continue a conversation:
 
@@ -108,5 +108,5 @@ These rules follow the [handle](https://atproto.com/specs/handle),
 syntax relevant to public Bluesky URLs; they do not verify that an account exists.
 
 Context, replies, and explicit continuation have the same invocation rules as X.
-See the [Bluesky provider details](../packages/provider-fxtwitter/README.md#bluesky)
+See the [Bluesky provider details](../packages/provider-fxembed/README.md#bluesky)
 for endpoint mapping and upstream coverage limitations.

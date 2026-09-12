@@ -2,7 +2,7 @@ import { FeedError, type JsonObject, type RequestContext } from "@edgestream/fee
 import { version } from "./version.js";
 
 export async function request(fetch: typeof globalThis.fetch, platform: "x" | "bluesky", path: string, context: RequestContext): Promise<JsonObject> {
-  const label = platform === "x" ? "fxTwitter" : "FxBluesky";
+  const label = platform === "x" ? "FxEmbed X API" : "FxEmbed Bluesky API";
   if (context.signal?.aborted) throw new FeedError("CANCELLED", "Request cancelled.", { cause: context.signal.reason });
   try {
     const response = await fetch(`${platform === "x" ? "https://api.fxtwitter.com" : "https://api.fxbsky.app"}/2/${path}`, {

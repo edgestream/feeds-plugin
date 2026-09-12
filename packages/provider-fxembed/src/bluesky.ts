@@ -1,13 +1,13 @@
 import { FeedError, type JsonObject, type FeedProvider, type FeedOptions, type RequestContext } from "@edgestream/feeds-core";
-import type { FxTwitterOptions } from "./index.js";
+import type { FxEmbedOptions } from "./options.js";
 import { request } from "./request.js";
 
 export class FxBlueskyProvider implements FeedProvider {
-  readonly id = "fxtwitter";
+  readonly id = "fxembed";
   readonly platform = "bluesky";
   private readonly fetch: typeof globalThis.fetch;
 
-  constructor(options: FxTwitterOptions = {}) {
+  constructor(options: FxEmbedOptions = {}) {
     this.fetch = options.fetch ?? globalThis.fetch;
   }
 

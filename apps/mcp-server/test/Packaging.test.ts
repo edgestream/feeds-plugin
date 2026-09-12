@@ -141,7 +141,7 @@ test("installed stdio bundle handshakes and retrieves without node_modules", asy
   const directory = await installed();
   const client = new Client({ name: "bundle-test", version: "1" });
   try {
-    await client.connect(new StdioClientTransport({ command: process.execPath, args: ["--import", "./fetch.mjs", "./dist/feeds-mcp.mjs"], cwd: directory, env: { ...getDefaultEnvironment(), FEEDS_X_PROVIDER: "fxtwitter" }, stderr: "pipe" }));
+    await client.connect(new StdioClientTransport({ command: process.execPath, args: ["--import", "./fetch.mjs", "./dist/feeds-mcp.mjs"], cwd: directory, env: { ...getDefaultEnvironment(), FEEDS_X_PROVIDER: "fxembed" }, stderr: "pipe" }));
     await verify(client);
   } finally { await client.close(); await rm(directory, { recursive: true, force: true }); }
 });
@@ -152,7 +152,7 @@ test("installed HTTP bundle handshakes and shuts down", { timeout: 15000 }, asyn
   reservation.listen(0, "127.0.0.1"); await once(reservation, "listening");
   const port = (reservation.address() as AddressInfo).port;
   await new Promise<void>(resolve => reservation.close(() => resolve()));
-  const child = spawn(process.execPath, ["--import", "./fetch.mjs", "./dist/feeds-mcp-http.mjs"], { cwd: directory, env: { ...getDefaultEnvironment(), FEEDS_X_PROVIDER: "fxtwitter", FEEDS_MCP_HTTP_PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath, ["--import", "./fetch.mjs", "./dist/feeds-mcp-http.mjs"], { cwd: directory, env: { ...getDefaultEnvironment(), FEEDS_X_PROVIDER: "fxembed", FEEDS_MCP_HTTP_PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
   const exited = once(child, "exit");
   const client = new Client({ name: "http-bundle-test", version: "1" });
   try {

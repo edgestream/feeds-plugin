@@ -195,7 +195,7 @@ test("independently validates public URLs and encodes actor and record key", asy
     assert.equal(url, "https://api.fxbsky.app/2/" + paths[calls++]);
     return Response.json(payload);
   } });
-  assert.equal(provider.id, "fxtwitter");
+  assert.equal(provider.id, "fxembed");
   assert.equal(provider.platform, "bluesky");
   for (const source of validBlueskyUrls) await provider.get(new URL(source));
   for (const source of invalidBlueskyUrls) await assert.rejects(provider.get(new URL(source)), { code: "INVALID_INPUT" }, source);

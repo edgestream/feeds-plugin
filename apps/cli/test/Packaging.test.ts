@@ -32,7 +32,7 @@ globalThis.fetch = async (url, options) => {
   assert.equal(options.redirect, 'error');
   return Response.json({ status: { id: '123', text: 'Hello 🌍', unknown: [null, 42] } });
 };`);
-    const env = { ...process.env, FEEDS_X_PROVIDER: "fxtwitter", NODE_OPTIONS: `--import=${preload}` };
+    const env = { ...process.env, FEEDS_X_PROVIDER: "fxembed", NODE_OPTIONS: `--import=${preload}` };
     const result = await exec("npx", ["--no-install", "feeds", "show", "https://x.com/alice/status/123"], { cwd: root, env });
     assert.deepEqual(JSON.parse(result.stdout), { status: { id: "123", text: "Hello 🌍", unknown: [null, 42] } });
     assert.equal(result.stderr, "");
