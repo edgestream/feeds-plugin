@@ -3,6 +3,7 @@ import { FeedService } from "@edgestream/feeds-application";
 import { BlueskyPlatform } from "@edgestream/feeds-platform-bluesky";
 import { XPlatform } from "@edgestream/feeds-platform-x";
 import { FxTwitterProvider, FxBlueskyProvider, type FxEmbedOptions } from "@edgestream/feeds-provider-fxembed";
+export { HostedFxEmbedPolicy, createHostedFxEmbedState, defaultHostedFeedsLimits, type HostedFeedsLimits, type HostedFxEmbedState } from "./hosted.js";
 
 export interface Configuration { readonly xProvider: string; readonly blueskyProvider?: string }
 

@@ -67,6 +67,14 @@ introspection verifier configuration and accepts only active adapter access
 tokens for that exact resource. This boundary is not used by the local CLI or
 stdio server.
 
+Hosted composition additionally wraps FxEmbed fetches in a request-local policy
+keyed by the verified principal and backed by process-wide admission state. It
+allows only the two fixed FxEmbed API origins, rejects redirects, applies a
+configurable deadline, and can apply optional per-principal/global request and
+concurrency budgets before opening a connection. It does not size-limit,
+truncate, or alter successful upstream JSON; CLI and stdio retain native
+provider behavior.
+
 ## Interface documentation
 
 - [CLI.md](CLI.md): command syntax, supported public URLs, output, and exit codes.
