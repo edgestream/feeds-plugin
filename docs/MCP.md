@@ -104,6 +104,11 @@ required by the SDK. It has no persistent MCP sessions or legacy SSE endpoint.
 | `FEEDS_MCP_INTROSPECTION_URL` | — | Cluster-private adapter verification endpoint; required with `FEEDS_MCP_OAUTH_RESOURCE`. |
 | `FEEDS_MCP_INTROSPECTION_CLIENT_ID` | — | Private verifier client ID; required with `FEEDS_MCP_OAUTH_RESOURCE`. |
 | `FEEDS_MCP_INTROSPECTION_CLIENT_SECRET` | — | Private verifier client secret; required with `FEEDS_MCP_OAUTH_RESOURCE`. |
+| `FEEDS_HOSTED_UPSTREAM_TIMEOUT_MS` | `10000` | Hosted FxEmbed request deadline in milliseconds. |
+| `FEEDS_HOSTED_MAX_REQUESTS_PER_PRINCIPAL` | unset | Optional hosted request budget for one verified principal. |
+| `FEEDS_HOSTED_MAX_REQUESTS_GLOBAL` | unset | Optional process-wide hosted request budget. |
+| `FEEDS_HOSTED_MAX_CONCURRENT_PER_PRINCIPAL` | unset | Optional hosted concurrent-request limit for one verified principal. |
+| `FEEDS_HOSTED_MAX_CONCURRENT_GLOBAL` | unset | Optional process-wide hosted concurrent-request limit. |
 
 Provider selection uses the shared [runtime configuration](ARCHITECTURE.md#runtime-configuration).
 
@@ -113,6 +118,13 @@ and incoming requests use bounded timeouts; disconnected clients abort active MC
 work. SIGINT/SIGTERM stop the listener, with a ten-second grace period before
 closing active connections. HTTP operational errors do not log upstream content,
 credentials, or stack traces.
+
+Hosted FxEmbed retrieval accepts only the fixed X and Bluesky API origins,
+rejects redirects, never forwards MCP credentials, and applies the configured
+deadline. Optional positive budget values reserve work before connecting and
+release concurrent reservations on completion, cancellation, and failure.
+Rejected admission performs no upstream call. Successful JSON is read in full
+and returned unchanged: Feeds has no response-size limit or truncation policy.
 
 ## Hosted authentication
 
