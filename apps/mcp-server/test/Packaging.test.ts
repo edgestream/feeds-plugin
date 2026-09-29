@@ -172,11 +172,48 @@ test("installed HTTP bundle handshakes and shuts down", { timeout: 15000 }, asyn
   assert.equal(child.exitCode, 0);
 });
 
+test("installed HTTP bundle publishes OAuth metadata and challenges before provider access", { timeout: 15000 }, async () => {
+  const directory = await installed();
+  const reservation = createServer();
+  reservation.listen(0, "127.0.0.1"); await once(reservation, "listening");
+  const port = (reservation.address() as AddressInfo).port;
+  await new Promise<void>(resolve => reservation.close(() => resolve()));
+  const child = spawn(process.execPath, ["./dist/feeds-mcp-http.mjs"], {
+    cwd: directory,
+    env: {
+      ...getDefaultEnvironment(), FEEDS_MCP_HTTP_PORT: String(port), FEEDS_MCP_OAUTH_RESOURCE: "https://feeds.example/mcp",
+      FEEDS_MCP_OAUTH_ISSUER: "https://auth.example/", FEEDS_MCP_INTROSPECTION_URL: "http://adapter.internal/introspect",
+      FEEDS_MCP_INTROSPECTION_CLIENT_ID: "feeds", FEEDS_MCP_INTROSPECTION_CLIENT_SECRET: "secret",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const exited = once(child, "exit");
+  try {
+    await new Promise<void>((resolve, reject) => {
+      let log = "";
+      child.stderr.on("data", data => { log += data; if (log.includes("listening at")) resolve(); });
+      child.once("error", reject); child.once("exit", () => reject(new Error(`HTTP bundle exited: ${log}`)));
+    });
+    const origin = `http://127.0.0.1:${port}`;
+    const metadata = await fetch(`${origin}/.well-known/oauth-protected-resource`);
+    assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["feeds:read"] });
+    const rejected = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "get_feed", arguments: { source: "https://x.com/a/status/123" } } }) });
+    assert.equal(rejected.status, 401);
+    assert.match(rejected.headers.get("www-authenticate") ?? "", /resource_metadata="https:\/\/feeds\.example\/.well-known\/oauth-protected-resource"/u);
+  } finally {
+    child.kill("SIGTERM"); await exited; await rm(directory, { recursive: true, force: true });
+  }
+  assert.equal(child.exitCode, 0);
+});
+
 test("HTTP bundle rejects invalid deployment configuration before listening", async () => {
   for (const env of [
     { FEEDS_MCP_HTTP_HOST: "0.0.0.0" },
     { FEEDS_MCP_HTTP_PORT: "0" },
     { FEEDS_MCP_HTTP_PUBLIC_URL: "https://user:secret@example.test/mcp" },
+    { FEEDS_MCP_OAUTH_RESOURCE: "http://feeds.example/mcp" },
+    { FEEDS_MCP_OAUTH_RESOURCE: "https://feeds.example/mcp?not=canonical" },
+    { FEEDS_MCP_HTTP_HOST: "0.0.0.0", FEEDS_MCP_HTTP_ALLOW_REMOTE: "true" },
     { FEEDS_X_PROVIDER: "unknown" },
     { FEEDS_BLUESKY_PROVIDER: "unknown" },
   ]) {
