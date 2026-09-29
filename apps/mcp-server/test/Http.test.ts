@@ -7,6 +7,72 @@ import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/cli
 import { createFeed } from "@edgestream/feeds-runtime";
 import { createFeedsMcpHttpServer, createFeedsMcpServer } from "../src/index.js";
 
+test("protects hosted feed calls before runtime or FxEmbed access", async () => {
+  let providerCalls = 0;
+  let factoryCalls = 0;
+  let seenPrincipal: unknown;
+  const verifier = {
+    async verify(token: string) {
+      if (["revoked", "unavailable"].includes(token)) throw new Error("not active");
+      return {
+        issuer: token === "wrong-issuer" ? "https://other.example/" : "https://auth.example/",
+        subject: token === "expired" ? "account-expired" : "account-a",
+        scopes: token === "insufficient" ? ["other:read"] : ["feeds:read"],
+        expiresAt: token === "expired" ? Math.floor(Date.now() / 1_000) - 1 : Math.floor(Date.now() / 1_000) + 60,
+      };
+    },
+  };
+  const server = createFeedsMcpHttpServer((context) => {
+    factoryCalls++;
+    seenPrincipal = context.authInfo?.extra?.feedsPrincipal;
+    const feeds = createFeed({ xProvider: "fxembed" }, { fetch: async () => { providerCalls++; return Response.json({ status: { id: "123" } }); } });
+    return createFeedsMcpServer({ feeds });
+  }, {
+    host: "127.0.0.1", port: 0, allowedHosts: ["127.0.0.1", "feeds.example"], allowedOrigins: ["trusted.example"],
+    authentication: { resource: "https://feeds.example/mcp", issuer: "https://auth.example/", verifier },
+  });
+  server.listen(0, "127.0.0.1"); await once(server, "listening");
+  const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const call = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "get_feed", arguments: { source: "https://x.com/a/status/123" } } });
+  try {
+    for (const headers of [
+      { "content-type": "application/json" }, { authorization: "Basic forged", "content-type": "application/json" },
+      { authorization: "Bearer expired", "content-type": "application/json" }, { authorization: "Bearer revoked", "content-type": "application/json" },
+      { authorization: "Bearer unavailable", "content-type": "application/json" }, { authorization: "Bearer wrong-issuer", "content-type": "application/json" },
+      { authorization: "Bearer revoked", "x-feeds-subject": "account-a", "x-forwarded-user": "account-a", "content-type": "application/json" },
+    ]) {
+      const response = await fetch(`${origin}/mcp`, { method: "POST", headers, body: call });
+      assert.equal(response.status, 401);
+      assert.match(response.headers.get("www-authenticate") ?? "", /resource_metadata="https:\/\/feeds\.example\/.well-known\/oauth-protected-resource"/u);
+    }
+    const insufficient = await fetch(`${origin}/mcp`, { method: "POST", headers: { authorization: "Bearer insufficient", "content-type": "application/json" }, body: call });
+    assert.equal(insufficient.status, 403);
+    assert.match(insufficient.headers.get("www-authenticate") ?? "", /error="insufficient_scope", scope="feeds:read"/u);
+    assert.equal(factoryCalls, 0);
+    assert.equal(providerCalls, 0);
+
+    const metadata = await fetch(`${origin}/.well-known/oauth-protected-resource/mcp`);
+    assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["feeds:read"] });
+    const schemas = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }) });
+    assert.equal(schemas.status, 200);
+    assert.equal(providerCalls, 0);
+
+    const spoofedHost = await new Promise<number | undefined>((resolve, reject) => {
+      const request = httpRequest(`${origin}/mcp`, { method: "POST", headers: { host: "attacker.example", "x-forwarded-host": "feeds.example", "x-forwarded-proto": "https", "content-type": "application/json" } }, response => { response.resume(); response.on("end", () => resolve(response.statusCode)); });
+      request.on("error", reject); request.end(call);
+    });
+    assert.equal(spoofedHost, 403);
+    const spoofedOrigin = await fetch(`${origin}/mcp`, { method: "POST", headers: { authorization: "Bearer accepted", origin: "https://attacker.example", "content-type": "application/json" }, body: call });
+    assert.equal(spoofedOrigin.status, 403);
+    assert.equal(providerCalls, 0);
+
+    const accepted = await fetch(`${origin}/mcp`, { method: "POST", headers: { authorization: "Bearer accepted", "content-type": "application/json", accept: "application/json, text/event-stream" }, body: call });
+    assert.equal(accepted.status, 200);
+    assert.deepEqual(seenPrincipal, { issuer: "https://auth.example/", subject: "account-a", scopes: ["feeds:read"], expiresAt: (seenPrincipal as { expiresAt: number }).expiresAt });
+    assert.equal(providerCalls, 1);
+  } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
+});
+
 test("HTTP protocol discovery, retrieval, validation and bounded bodies", async () => {
   let calls = 0;
   const feeds = createFeed({ xProvider: "fxembed" }, { fetch: async () => { calls++; return Response.json({ status: { id: "123", text: "hello" } }); } });

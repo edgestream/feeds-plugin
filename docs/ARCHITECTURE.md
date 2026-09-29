@@ -33,7 +33,11 @@ apps/mcp-server -+--> packages/runtime --> packages/application --> packages/cor
 - `apps/cli` parses arguments, calls the service, formats JSON, and handles process
   output and SIGINT. It constructs no providers or platforms.
 - `apps/mcp-server` exposes only `get_feed` through stdio and Streamable HTTP.
-  It constructs no providers or platforms.
+  Its hosted HTTP adapter verifies the resource-bound access token before MCP
+  dispatch, then attaches the immutable `(issuer, subject)` principal to the
+  request context. Runtime composition remains explicit and does not interpret
+  identity; a later hosted budget can consume that verified request-local
+  principal without using a transport session as identity.
 
 ## Data flow
 
@@ -56,6 +60,12 @@ to `fxembed` when absent. Selection is independent per platform; X uses
 Programmatic configuration may omit `blueskyProvider` to retain this default.
 Empty or unknown values are configuration errors. Runtime does not discover
 providers dynamically or configure an API root, credentials, or fallback.
+
+Hosted HTTP authentication is separate from provider configuration. When
+`FEEDS_MCP_OAUTH_RESOURCE` is configured, the MCP adapter uses its private
+introspection verifier configuration and accepts only active adapter access
+tokens for that exact resource. This boundary is not used by the local CLI or
+stdio server.
 
 ## Interface documentation
 
