@@ -198,8 +198,10 @@ test("installed HTTP bundle publishes OAuth metadata and challenges before provi
     const metadata = await fetch(`${origin}/.well-known/oauth-protected-resource`);
     assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["feeds:read"] });
     const rejected = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "get_feed", arguments: { source: "https://x.com/a/status/123" } } }) });
-    assert.equal(rejected.status, 401);
-    assert.match(rejected.headers.get("www-authenticate") ?? "", /resource_metadata="https:\/\/feeds\.example\/.well-known\/oauth-protected-resource"/u);
+    assert.equal(rejected.status, 200);
+    const denied = await rejected.json();
+    assert.equal(denied.result.isError, true);
+    assert.deepEqual(denied.result._meta["mcp/www_authenticate"], ['Bearer resource_metadata="https://feeds.example/.well-known/oauth-protected-resource", error="invalid_token", error_description="Sign in required"']);
   } finally {
     child.kill("SIGTERM"); await exited; await rm(directory, { recursive: true, force: true });
   }
