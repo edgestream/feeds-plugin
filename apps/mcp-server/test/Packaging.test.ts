@@ -24,8 +24,8 @@ test("synchronizes plugin metadata and launch configuration", async () => {
   assert.equal(codex.skills, "./skills/");
   assert.equal(portable.mcpServers, undefined);
   const a = await json("mcp.json"), b = await json(".mcp.json");
-  assert.deepEqual(a.mcpServers.feeds, { type: "stdio", ...b.mcpServers.feeds });
-  assert.deepEqual(b.mcpServers.feeds, { command: "node", args: ["./dist/feeds-mcp.mjs"] });
+  assert.deepEqual(a.mcpServers.feeds, { type: "streamable-http", url: "https://feeds.mcp.edgestream.cloud/mcp" });
+  assert.deepEqual(b.mcpServers.feeds, { url: "https://feeds.mcp.edgestream.cloud/mcp" });
   assert.match(a.$schema, /\/1\.0\.0\/mcp\.schema\.json$/);
   assert.match(portable.$schema, /\/1\.0\.0\/plugin\.schema\.json$/);
 });

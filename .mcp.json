@@ -1,10 +1,7 @@
 {
   "mcpServers": {
     "feeds": {
-      "command": "node",
-      "args": [
-        "./dist/feeds-mcp.mjs"
-      ]
+      "url": "https://feeds.mcp.edgestream.cloud/mcp"
     }
   }
 }
