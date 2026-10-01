@@ -12,7 +12,7 @@ const json = async (directory, file) => JSON.parse(await readFile(join(directory
 async function fixture(t) {
   const directory = await mkdtemp(join(tmpdir(), "feeds-release-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
-  for (const file of ["package.json", "package-lock.json", "plugin.json", ".codex-plugin", "apps", "packages"]) {
+  for (const file of ["package.json", "package-lock.json", "plugin.json", "mcp.json", ".mcp.json", ".codex-plugin", "apps", "packages"]) {
     await cp(join(root, file), join(directory, file), {
       recursive: true,
       filter: source => !source.split(/[\\/]/u).some(part => ["dist", "node_modules"].includes(part)),
@@ -71,11 +71,36 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(codex.interface.displayName, displayName);
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
+    const portableMcp = await json(directory, "mcp.json");
+    const codexMcp = await json(directory, ".mcp.json");
+    assert.match(portableMcp.$schema, /\/1\.0\.0\/mcp\.schema\.json$/);
+    if (channel === "stable") {
+      assert.deepEqual(portableMcp.mcpServers.feeds, { type: "streamable-http", url: "https://feeds.mcp.edgestream.cloud/mcp" });
+      assert.deepEqual(codexMcp.mcpServers.feeds, { url: "https://feeds.mcp.edgestream.cloud/mcp" });
+    } else {
+      assert.deepEqual(portableMcp.mcpServers.feeds, { type: "stdio", command: "node", args: ["./dist/feeds-mcp.mjs"] });
+      assert.deepEqual(codexMcp.mcpServers.feeds, { command: "node", args: ["./dist/feeds-mcp.mjs"] });
+    }
     assert.match(portable.$schema, /\/1\.0\.0\//);
     for (const file of ["apps/mcp-server/src/version.ts", "packages/provider-fxembed/src/version.ts"]) {
       assert.ok((await readFile(join(directory, file), "utf8")).includes(`export const version = "${version}";`));
     }
   }
+});
+
+test("check rejects drift in either channel-controlled MCP manifest", async t => {
+  const directory = await fixture(t);
+  const target = { version: "0.1.0", channel: "stable", mode: "write" };
+  await prepareRelease(directory, target);
+  const portable = await json(directory, "mcp.json");
+  portable.mcpServers.feeds.command = "node";
+  await writeFile(join(directory, "mcp.json"), JSON.stringify(portable, null, 2));
+  await assert.rejects(prepareRelease(directory, { ...target, mode: "check" }), /mcp\.json/);
+  await prepareRelease(directory, target);
+  const codex = await json(directory, ".mcp.json");
+  codex.mcpServers.feeds.args = ["./dist/feeds-mcp.mjs"];
+  await writeFile(join(directory, ".mcp.json"), JSON.stringify(codex, null, 2));
+  await assert.rejects(prepareRelease(directory, { ...target, mode: "check" }), /\.mcp\.json/);
 });
 
 test("invalid lockfile fails before any metadata is written", async t => {
