@@ -27,7 +27,7 @@ export async function main(): Promise<void> {
       policy = hostedPolicies.get(key);
       if (policy === undefined) { policy = new HostedFxEmbedPolicy(principal, hostedLimits, undefined, hostedState); hostedPolicies.set(key, policy); }
     }
-    return createFeedsMcpServer({ feeds: createFeed(undefined, policy === undefined ? {} : { fetch: policy.fetch }) });
+    return createFeedsMcpServer({ feeds: createFeed(undefined, policy === undefined ? {} : { fetch: policy.fetch }), ...(authentication === undefined ? {} : { hostedAuthentication: { resource: authentication.resource } }) });
   }, {
     host, port, allowedHosts: [host, "localhost", "127.0.0.1", "[::1]", ...(authentication === undefined ? [new URL(publicUrl).hostname] : [new URL(authentication.resource).host])],
     allowedOrigins: readList(process.env.FEEDS_MCP_HTTP_ALLOWED_ORIGINS, ["localhost", "127.0.0.1", "[::1]"]),

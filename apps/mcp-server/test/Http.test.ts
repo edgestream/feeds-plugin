@@ -36,18 +36,20 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
   const call = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "get_feed", arguments: { source: "https://x.com/a/status/123" } } });
   try {
     for (const headers of [
-      { "content-type": "application/json" }, { authorization: "Basic forged", "content-type": "application/json" },
-      { authorization: "Bearer expired", "content-type": "application/json" }, { authorization: "Bearer revoked", "content-type": "application/json" },
-      { authorization: "Bearer unavailable", "content-type": "application/json" }, { authorization: "Bearer wrong-issuer", "content-type": "application/json" },
-      { authorization: "Bearer revoked", "x-feeds-subject": "account-a", "x-forwarded-user": "account-a", "content-type": "application/json" },
+      { "content-type": "application/json", accept: "application/json" }, { authorization: "Basic forged", "content-type": "application/json", accept: "application/json" },
+      { authorization: "Bearer expired", "content-type": "application/json", accept: "application/json" }, { authorization: "Bearer revoked", "content-type": "application/json", accept: "application/json" },
+      { authorization: "Bearer unavailable", "content-type": "application/json", accept: "application/json" }, { authorization: "Bearer wrong-issuer", "content-type": "application/json", accept: "application/json" },
+      { authorization: "Bearer revoked", "x-feeds-subject": "account-a", "x-forwarded-user": "account-a", "content-type": "application/json", accept: "application/json" },
     ]) {
       const response = await fetch(`${origin}/mcp`, { method: "POST", headers, body: call });
-      assert.equal(response.status, 401);
-      assert.match(response.headers.get("www-authenticate") ?? "", /resource_metadata="https:\/\/feeds\.example\/.well-known\/oauth-protected-resource"/u);
+      assert.equal(response.status, 200);
+      const result = await response.json();
+      assert.equal(result.result.isError, true);
+      assert.deepEqual(result.result._meta["mcp/www_authenticate"], ['Bearer resource_metadata="https://feeds.example/.well-known/oauth-protected-resource", error="invalid_token", error_description="Sign in required"']);
     }
-    const insufficient = await fetch(`${origin}/mcp`, { method: "POST", headers: { authorization: "Bearer insufficient", "content-type": "application/json" }, body: call });
-    assert.equal(insufficient.status, 403);
-    assert.match(insufficient.headers.get("www-authenticate") ?? "", /error="insufficient_scope", scope="feeds:read"/u);
+    const insufficient = await fetch(`${origin}/mcp`, { method: "POST", headers: { authorization: "Bearer insufficient", "content-type": "application/json", accept: "application/json" }, body: call });
+    assert.equal(insufficient.status, 200);
+    assert.deepEqual((await insufficient.json()).result._meta["mcp/www_authenticate"], ['Bearer resource_metadata="https://feeds.example/.well-known/oauth-protected-resource", error="insufficient_scope", error_description="Feeds read permission is required", scope="feeds:read"']);
     assert.equal(factoryCalls, 0);
     assert.equal(providerCalls, 0);
 
@@ -55,6 +57,7 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
     assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["feeds:read"] });
     const schemas = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }) });
     assert.equal(schemas.status, 200);
+    assert.match(await schemas.text(), /"securitySchemes":\[\{"type":"oauth2","scopes":\["feeds:read"\]\}\]/u);
     assert.equal(providerCalls, 0);
 
     const spoofedHost = await new Promise<number | undefined>((resolve, reject) => {
