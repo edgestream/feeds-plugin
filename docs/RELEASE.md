@@ -42,6 +42,9 @@ It manages:
   entries. External dependency versions and integrity metadata remain unchanged.
 - `plugin.json` and `.codex-plugin/plugin.json`: version, plugin name, and
   matching display names selected by channel.
+- `mcp.json` and `.mcp.json`: complete channel-specific MCP configuration. Stable
+  uses the hosted Streamable HTTP endpoint; development uses the bundled stdio
+  process. The portable and Codex formats intentionally differ.
 - `apps/mcp-server/src/version.ts`: the default MCP initialization version.
   The server's explicit version override remains available to callers.
 - `packages/provider-fxembed/src/version.ts`: the version in the upstream
@@ -130,8 +133,9 @@ line, all versions match the tag, and the tag is absent or already points to the
 same verified commit on a resumed publication. A conflicting tag is an error.
 
 Tests cover workspace/lockfile/manifest/runtime version synchronization, both
-channels, patch preparation, read-only preview/check, repeatability, and failure
-before writes for malformed metadata. Packaging tests initialize both standalone
+channels, channel transitions, patch preparation, read-only preview/check,
+repeatability, MCP-manifest drift, and failure before writes for malformed
+metadata. Packaging tests initialize both standalone
 MCP transports and compare their reported version with the root package version.
 Provider tests check the User-Agent through injected HTTP; shared contract tests
 and existing CLI/MCP tests require no live upstream service.

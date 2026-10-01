@@ -22,6 +22,15 @@ codex mcp get feeds
 This standalone configuration provides the MCP server but not the plugin’s URL
 routing skill.
 
+### Plugin channels
+
+Stable **Feeds** connects to `https://feeds.mcp.edgestream.cloud/mcp`. Clients
+discover OAuth only from that hosted MCP service's protected-resource metadata
+and authorization challenges; plugin manifests contain neither credentials nor
+an authorization configuration. **Feeds Dev** instead starts the bundled local
+stdio process, `node ./dist/feeds-mcp.mjs`. Installing a local developer
+marketplace package does not connect it to the hosted service.
+
 ## Tool
 
 `get_feed(source, context?, answers?, cursor?)` accepts a complete public post or profile URL.
@@ -156,8 +165,9 @@ It is not a storage namespace or a quota implementation.
 
 For remote ChatGPT use, expose `/mcp` over HTTPS with the configured OAuth adapter;
 TLS, OAuth-adapter deployment and account setup remain external to this package.
-The local plugin manifests launch stdio, not HTTP, and CLI/stdio usage is unchanged
-and unauthenticated as local-process use. See the official
+The stable plugin manifest uses the hosted endpoint; the development manifests
+launch stdio. CLI/stdio usage is unchanged and unauthenticated as local-process
+use. See the official
 [ChatGPT developer-mode guide](https://developers.openai.com/api/docs/guides/developer-mode)
 for connection setup and actual tool-call verification.
 
