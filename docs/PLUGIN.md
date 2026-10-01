@@ -22,12 +22,21 @@ Both manifests use the root package version and the channel identity listed in
 [README.md](../README.md#plugin), following [the release procedure](RELEASE.md).
 Repository and plugin folder names need not match; installed plugin identity comes from the manifest.
 
-Both configurations start `node ./dist/feeds-mcp.mjs`. They omit `cwd` and rely on
-the plugin host starting in the installed plugin root. No
-undocumented plugin-root placeholder, `tsx`, or `node_modules` is required.
-Provider-selection environment variables are intentionally omitted so shared runtime defaults apply. No
-persistent data or `${PLUGIN_DATA}` setting is required. HTTP is a separate
-entry point documented in [MCP.md](MCP.md).
+Release preparation selects both MCP configurations with the channel identity.
+Stable `Feeds` uses the hosted Streamable HTTP endpoint
+`https://feeds.mcp.edgestream.cloud/mcp`: portable `mcp.json` declares its
+`streamable-http` type and URL, while Codex `.mcp.json` declares the URL in its
+compatibility format. The hosted server supplies protected-resource metadata and
+OAuth challenges; no manifest includes OAuth credentials or a copied
+authorization configuration.
+
+`Feeds Dev` keeps the local stdio configuration in both forms, starting
+`node ./dist/feeds-mcp.mjs`. It omits `cwd` and relies on the plugin host starting
+in the installed plugin root. No undocumented plugin-root placeholder, `tsx`, or
+`node_modules` is required. Provider-selection environment variables are
+intentionally omitted so shared runtime defaults apply. A developer-marketplace
+installation remains local or self-hosted and does not grant hosted-service
+access. HTTP is a separate entry point documented in [MCP.md](MCP.md).
 
 Marketplace installation, discovery, and updates are documented in
 [`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace#installation).
@@ -45,8 +54,8 @@ See [SKILL.md](SKILL.md) for activation, argument selection, and behavioral veri
 
 ## Verification
 
-Keep identity, version, descriptions, author, repository, keywords, and shared
-launch settings synchronized. Packaging tests enforce this and start the bundles
+Keep identity, version, descriptions, author, repository, keywords, and
+channel-selected MCP settings synchronized. Packaging tests enforce this and start the bundles
 from an isolated installation directory. Rebuild all committed bundles when
 runtime sources or dependencies change. Validate manifests and run:
 
