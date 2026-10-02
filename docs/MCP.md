@@ -163,11 +163,10 @@ or forwarded headers. Its immutable verified `(issuer, subject)` principal is
 attached only to the current MCP request for future hosted request-budget work.
 It is not a storage namespace or a quota implementation.
 
-For remote ChatGPT use, expose `/mcp` over HTTPS with the configured OAuth adapter;
-TLS, OAuth-adapter deployment and account setup remain external to this package.
 The stable plugin manifest uses the hosted endpoint; the development manifests
 launch stdio. CLI/stdio usage is unchanged and unauthenticated as local-process
-use. See the official
+use. See the [hosted operations guide](OPERATIONS.md) for Workspace installation,
+personal linking, remote Codex loopback callbacks, and release diagnosis. See the official
 [ChatGPT developer-mode guide](https://developers.openai.com/api/docs/guides/developer-mode)
 for connection setup and actual tool-call verification.
 
@@ -180,6 +179,7 @@ loopback HTTP. They prove denied requests do not invoke the configured provider.
 See [packaging verification](PLUGIN.md#verification) for isolated bundle checks.
 Automated MCP tests require no live upstream access.
 
-A live ChatGPT account connection and deployed HTTPS/authentication endpoint are
-not provisioned by this implementation. Verify actual MCP calls after configuring
-that environment; a natural-language answer alone is not evidence of tool use.
+Live workspace and Codex OAuth verification is operational evidence rather than
+an automated test. A natural-language answer alone is not evidence of tool use;
+follow the [operations guide](OPERATIONS.md) when recording an actual installation
+and MCP call.

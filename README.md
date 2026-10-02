@@ -15,6 +15,8 @@ provide access to the hosted service.
 
 See the [marketplace installation guide](https://github.com/edgestream/agent-marketplace#installation)
 for installation, channel selection, and updates.
+For hosted workspace operation, OAuth linking, supported clients, and incident
+handling, see the [operations guide](docs/OPERATIONS.md).
 
 ## CLI
 
