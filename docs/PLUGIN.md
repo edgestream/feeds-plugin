@@ -1,11 +1,13 @@
 # Plugin packaging
 
-This plugin packages one read-only MCP service using two manifest pairs:
+This repository packages one read-only MCP service for desktop and portable
+clients, plus a Web wrapper for the already-approved workspace app:
 
 | Target | Files | Contract |
 | --- | --- | --- |
 | Portable agent plugin | `plugin.json`, `mcp.json` | [Agent Plugin Specification 1.0.0](https://github.com/agentplugins/agent-plugins-spec/blob/main/spec/1.0.0.md) |
 | Codex | `.codex-plugin/plugin.json`, `.mcp.json` | [Codex plugin packaging](https://developers.openai.com/plugins/build/plugins) |
+| ChatGPT Web | `web/.codex-plugin/plugin.json`, `web/.app.json` | Existing workspace app reference |
 
 The portable manifests declare matching 1.0.0 schemas. `plugin.json` carries
 metadata and the OpenAI-specific `extensions.com.openai.interface` presentation
@@ -21,6 +23,23 @@ asset constraints follow the [official submission error reference](https://devel
 Both manifests use the root package version and the channel identity listed in
 [README.md](../README.md#plugin), following [the release procedure](RELEASE.md).
 Repository and plugin folder names need not match; installed plugin identity comes from the manifest.
+
+## ChatGPT Web packaging
+
+`web/` is a deliberately separate native plugin package. Its internal identity
+is `feeds-web`, while its displayed name, developer name, version, description,
+license, repository, keywords, and interface metadata remain aligned with stable
+**Feeds**. It contains no `mcp.json`, `.mcp.json`, inline MCP declaration, or
+bundled server. Instead, `.app.json` references the approved hosted workspace
+app `asdk_app_6ac0a8553c4481918b9d9782300f52db` as required, and its manifest
+sets `apps` to that file. This prevents another MCP registration and avoids the
+Desktop-only classification for an imported workspace plugin.
+
+The workspace import must use the `web` subdirectory as its native plugin root.
+Do not replace the root package with this wrapper: the root package retains the
+stable hosted MCP connection for Codex/desktop and the local `Feeds Dev` channel.
+The release preparation script synchronizes the wrapper version with the root
+release metadata.
 
 Release preparation selects both MCP configurations with the channel identity.
 Stable `Feeds` uses the hosted Streamable HTTP endpoint
@@ -71,3 +90,9 @@ and MCP bundles from isolated installations without `node_modules`. MCP clients
 initialize, discover the tool, and retrieve injected upstream data. These tests
 verify packaging and explicit calls, not automatic skill activation; that evidence
 belongs in [SKILL.md](SKILL.md#recorded-status).
+
+For the Web wrapper, tests also assert the exact required app ID and that its
+manifest has no MCP declaration. Workspace import, role availability, individual
+OAuth connections, and bounded live X/Bluesky calls are operational acceptance
+evidence; record the source revision, import report, intended roles, and redacted
+results before treating the wrapper as accepted.

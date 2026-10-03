@@ -12,7 +12,7 @@ const json = async (directory, file) => JSON.parse(await readFile(join(directory
 async function fixture(t) {
   const directory = await mkdtemp(join(tmpdir(), "feeds-release-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
-  for (const file of ["package.json", "package-lock.json", "plugin.json", "mcp.json", ".mcp.json", ".codex-plugin", "apps", "packages"]) {
+  for (const file of ["package.json", "package-lock.json", "plugin.json", "mcp.json", ".mcp.json", ".codex-plugin", "web", "apps", "packages"]) {
     await cp(join(root, file), join(directory, file), {
       recursive: true,
       filter: source => !source.split(/[\\/]/u).some(part => ["dist", "node_modules"].includes(part)),
@@ -71,6 +71,9 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(codex.interface.displayName, displayName);
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
+    const web = await json(directory, "web/.codex-plugin/plugin.json");
+    assert.equal(web.version, version);
+    assert.equal(web.name, "feeds-web");
     const portableMcp = await json(directory, "mcp.json");
     const codexMcp = await json(directory, ".mcp.json");
     assert.match(portableMcp.$schema, /\/1\.0\.0\/mcp\.schema\.json$/);
@@ -86,6 +89,18 @@ test("preview is read-only; stable, patch and development preparation are repeat
       assert.ok((await readFile(join(directory, file), "utf8")).includes(`export const version = "${version}";`));
     }
   }
+});
+
+test("web package references the approved app without registering another MCP server", async () => {
+  const manifest = await json(root, "web/.codex-plugin/plugin.json");
+  const app = await json(root, "web/.app.json");
+  assert.equal(manifest.apps, "./.app.json");
+  assert.equal("mcpServers" in manifest, false);
+  assert.deepEqual(app, {
+    apps: {
+      feeds: { id: "asdk_app_6ac0a8553c4481918b9d9782300f52db", required: true },
+    },
+  });
 });
 
 test("check rejects drift in either channel-controlled MCP manifest", async t => {
