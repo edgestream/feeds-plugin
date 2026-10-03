@@ -30,7 +30,7 @@ test("committed versions and channel metadata agree", async () => {
   assert.deepEqual(await json(root, ".app.json"), {
     apps: {
       feeds: {
-        id: "asdk_app_6ac0a8553c4481918b9d9782300f52db",
+        id: "asdk_app_6ac0cdbf693881919570de155357722d",
         required: true,
       },
     },
