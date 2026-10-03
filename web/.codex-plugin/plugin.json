@@ -1,5 +1,5 @@
 {
-  "name": "feeds",
+  "name": "feeds-web",
   "version": "0.2.6",
   "description": "Read public social media feeds",
   "author": {
@@ -13,8 +13,7 @@
     "communications",
     "mcp"
   ],
-  "mcpServers": "./.mcp.json",
-  "skills": "./skills/",
+  "apps": "./.app.json",
   "interface": {
     "displayName": "Feeds",
     "shortDescription": "Read public social media feeds",
@@ -29,9 +28,6 @@
       "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
       "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
     ],
-    "brandColor": "#212121",
-    "composerIcon": "./assets/feeds-people-waves-128.png",
-    "logo": "./assets/feeds-people-waves-128.png"
-  },
-  "apps": "./.app.json"
+    "brandColor": "#212121"
+  }
 }
