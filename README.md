@@ -9,9 +9,11 @@ MCP, or run it from the command line.
 ## Plugin
 
 The stable identity is `feeds` / **Feeds** and connects to the hosted MCP
-service. Development uses `feeds-dev` / **Feeds Dev** and starts the bundled
-local stdio MCP server. A local developer-marketplace installation does not
-provide access to the hosted service.
+service. ChatGPT Web uses a separate wrapper that references the workspace's
+approved hosted app, while preserving the existing stable desktop package.
+Development uses `feeds-dev` / **Feeds Dev** and starts the bundled local stdio
+MCP server. A local developer-marketplace installation does not provide access
+to the hosted service.
 
 See the [marketplace installation guide](https://github.com/edgestream/agent-marketplace#installation)
 for installation, channel selection, and updates.
