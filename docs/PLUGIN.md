@@ -51,19 +51,18 @@ This repository owns the installable package; it does not deploy a remote server
 ## ChatGPT Web packaging
 
 `web/` is a deliberately separate, MCP-free native plugin package. Its internal
-identity remains stable `feeds`; its presented name, developer, version,
-descriptions, and interface metadata remain those of stable **Feeds**. Its `.app.json`
+identity is `feeds-web`; its presented name, developer, version, descriptions,
+and interface metadata remain those of stable **Feeds**. Its `.app.json`
 references the approved hosted Feeds app
 `asdk_app_6ac0cdbf693881919570de155357722d` as required, and its manifest sets
 `apps` to that file. It contains no `mcp.json`, `.mcp.json`, inline server, or
 bundled MCP implementation.
 
-The Marketplace has exactly one `feeds` entry. It uses the `web` subdirectory as
-the native plugin root and pins the existing Workspace instance with its
-`pluginId`; the wrapper neither creates a second Marketplace entry nor registers
-another MCP server. Release preparation synchronizes the wrapper version with
-the root package version. Do not replace the root package with the wrapper: the
-root retains the Codex/Desktop manifests and the local `Feeds Dev` channel.
+The Marketplace has one active Web entry, `feeds-web`, using the `web`
+subdirectory as its native plugin root. The wrapper does not register another
+MCP server. Release preparation synchronizes the wrapper version with the root
+package version. Do not replace the root package with the wrapper: the root
+retains the Codex/Desktop manifests and the local `Feeds Dev` channel.
 
 ## Skill packaging
 
