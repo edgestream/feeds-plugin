@@ -9,9 +9,10 @@ or the [Feeds GitOps manifests](https://github.com/edgestream/infrastructure/tre
 ## Release and publication
 
 Stable **Feeds** is the Marketplace entry `feeds`, currently pinned to the
-published `0.2.2` tag. That tag resolves to source commit
-`5121262dbf4d1c47df8ea004be8155842ee30d0c`; it is distinct from a moving
-release branch. The stable manifest connects only to
+published `0.2.4` tag. That tag resolves to source commit
+`9a3ddf2d1825c4b3ae4985d04028d121c7975e5f`; it is distinct from a moving
+release branch. The entry uses the MCP-free `web` source path and its required
+reference to the existing app, which connects to
 `https://feeds.mcp.edgestream.cloud/mcp`.
 
 The deployed GitOps application is `feeds-mcp`. Its current recorded revision
@@ -68,6 +69,10 @@ call for an X URL and one for a Bluesky URL. Record only redacted success/failur
 evidence; never record tokens, authorization codes, or feed contents. Unlinked
 use must stop at the OAuth challenge and must not reach FxEmbed.
 
+On 2026-10-03, the two intended users completed this Web acceptance with
+individual OAuth connections and bounded X and Bluesky `get_feed` calls. This
+is operational evidence only; do not record tokens or feed contents.
+
 For an update, merge a reviewed wrapper change, then select **Sync now** for the
 workspace marketplace and review its report. Sync preserves workspace policies;
 do not create a replacement app or raw MCP registration. To withdraw the wrapper,
@@ -89,8 +94,8 @@ For a remote Codex chat, forward the loopback port displayed by the OAuth flow
 over SSH to the machine running Codex, then finish authorization in the browser.
 Forward only that displayed local port for the active session; never expose the
 loopback callback publicly or substitute a different callback URL. Local Codex
-requires no tunnel. ChatGPT Web support remains separately tracked and is not a
-requirement for operating the confirmed Codex paths.
+requires no tunnel. ChatGPT Web support is confirmed for the two-user acceptance
+recorded above.
 
 **Feeds Dev** is different: it is the `feeds-dev` developer-marketplace identity
 and starts the bundled local stdio MCP server. It is for local or self-hosted
@@ -116,7 +121,7 @@ upstream JSON is returned unchanged and is not size-limited or truncated.
 
 ## Diagnose an incident
 
-1. Confirm the installed identity is **Feeds**, version/tag `0.2.2` (or the
+1. Confirm the installed identity is **Feeds**, version/tag `0.2.4` (or the
    intended later stable release), and that it resolves only to the hosted MCP
    URL. Remove duplicate raw MCP registrations, apps, or dev installations.
 2. Check the GitOps revision and that Argo CD `feeds-mcp` is **Synced** and
