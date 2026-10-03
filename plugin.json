@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "feeds",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Read public social media feeds",
   "author": {
     "name": "Edgestream"
@@ -17,7 +17,7 @@
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Feeds Dev",
+        "displayName": "Feeds",
         "shortDescription": "Read public social media feeds",
         "longDescription": "Read public posts, available context, replies and author feeds from supported social platforms.",
         "developerName": "Edgestream",
