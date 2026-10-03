@@ -1,6 +1,6 @@
 {
   "name": "feeds",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Read public social media feeds",
   "author": {
     "name": "Edgestream"
@@ -32,5 +32,6 @@
     "brandColor": "#212121",
     "composerIcon": "./assets/feeds-people-waves-128.png",
     "logo": "./assets/feeds-people-waves-128.png"
-  }
+  },
+  "apps": "./.app.json"
 }

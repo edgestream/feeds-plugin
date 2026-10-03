@@ -1,7 +1,6 @@
 # Hosted Feeds operations
 
-This runbook covers the stable, workspace-hosted **Feeds** plugin and its
-separate ChatGPT Web wrapper. It records
+This runbook covers the stable, workspace-hosted **Feeds** plugin. It records
 the operating contract for the current release without duplicating the
 [marketplace promotion procedure](https://github.com/edgestream/agent-marketplace/blob/main/docs/PROMOTION.md)
 or the [Feeds GitOps manifests](https://github.com/edgestream/infrastructure/tree/main/k8s/feeds-mcp/overlays/development).
@@ -49,38 +48,31 @@ client or workspace assignment and revoke the client authorization when its UI
 offers revocation. Removal is per client/account; it does not delete shared
 service data because Feeds does not store feed data.
 
-## ChatGPT Web wrapper
+## ChatGPT Web
 
-The Web wrapper is the MCP-free `web/` package in this repository. It references
-the already registered workspace app
-`asdk_app_6ac0a8553c4481918b9d9782300f52db`; it does not create an app, carry an
-OAuth credential, or declare another MCP server. Before import, a workspace
-administrator must confirm that this app resolves to
-`https://feeds.mcp.edgestream.cloud/mcp`, has the intended role assignments, and
-has not been replaced by a duplicate connection.
+The stable root package references the registered workspace app
+`asdk_app_6ac0cdbf693881919570de155357722d` through `.app.json`. It does not
+create an app or carry an OAuth credential. Before import, a workspace
+administrator must confirm that the app resolves to
+`https://feeds.mcp.edgestream.cloud/mcp` and has the intended role assignments.
 
-The existing Marketplace `feeds` entry uses the `web` source path; do not add a
-second Web plugin. After syncing it, inspect the saved import report. Configure
-the plugin's installation policy for the intended roles and leave the app's
-existing role, action, and service controls in force. Each intended person starts
-a new Web conversation, selects
-**Feeds**, completes their own OAuth connection, and performs one bounded `get_feed`
-call for an X URL and one for a Bluesky URL. Record only redacted success/failure
-evidence; never record tokens, authorization codes, or feed contents. Unlinked
-use must stop at the OAuth challenge and must not reach FxEmbed.
+The Marketplace has one `feeds` entry, sourced from the repository root. Do not
+add a Web-only plugin, a raw MCP server, or another app for the same service.
+After syncing, inspect the saved import report. Configure the plugin's installation
+policy for the intended roles and leave the app's role, action, and service controls
+in force. Each intended person starts a new Web conversation, selects **Feeds**,
+completes their own OAuth connection, and performs one bounded `get_feed` call for
+an X URL and one for a Bluesky URL. Record only redacted success/failure evidence;
+never record tokens, authorization codes, or feed contents. Unlinked use must stop
+at the OAuth challenge and must not reach FxEmbed.
 
-On 2026-10-03, the two intended users completed this Web acceptance with
-individual OAuth connections and bounded X and Bluesky `get_feed` calls. This
-is operational evidence only; do not record tokens or feed contents.
-
-For an update, merge a reviewed wrapper change, then select **Sync now** for the
-workspace marketplace and review its report. Sync preserves workspace policies;
-do not create a replacement app or raw MCP registration. To withdraw the wrapper,
-set its plugin availability to unavailable for the assigned roles or remove its
-marketplace entry after confirming the existing stable desktop package remains
-available. Removing a marketplace deletes all plugins it imported, so do not use
-that action to remove only this wrapper. Revoke individual authorizations through
-the client when access itself must be withdrawn.
+For an update, promote a reviewed stable release, then select **Sync now** for the
+workspace marketplace and review its report. Sync preserves workspace policies.
+To withdraw Feeds, set its plugin availability to unavailable for the assigned
+roles or remove its marketplace entry. Removing a marketplace deletes all plugins
+it imported, so do not use that action to remove only Feeds when the marketplace
+contains other entries. Revoke individual authorizations through the client when
+access itself must be withdrawn.
 
 ## Clients and OAuth callbacks
 
