@@ -2,8 +2,11 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "feeds": {
-      "type": "streamable-http",
-      "url": "https://feeds.mcp.edgestream.cloud/mcp"
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "./dist/feeds-mcp.mjs"
+      ]
     }
   }
 }

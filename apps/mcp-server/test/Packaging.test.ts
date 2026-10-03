@@ -24,15 +24,22 @@ test("synchronizes plugin metadata and launch configuration", async () => {
   assert.equal(codex.skills, "./skills/");
   assert.equal(portable.mcpServers, undefined);
   const a = await json("mcp.json"), b = await json(".mcp.json");
-  assert.deepEqual(a.mcpServers.feeds, { type: "streamable-http", url: "https://feeds.mcp.edgestream.cloud/mcp" });
-  assert.deepEqual(b.mcpServers.feeds, { url: "https://feeds.mcp.edgestream.cloud/mcp" });
+  if (portable.name === "feeds") {
+    assert.deepEqual(a.mcpServers.feeds, { type: "streamable-http", url: "https://feeds.mcp.edgestream.cloud/mcp" });
+    assert.deepEqual(b.mcpServers.feeds, { url: "https://feeds.mcp.edgestream.cloud/mcp" });
+    assert.equal(codex.apps, "./.app.json");
+  } else {
+    assert.deepEqual(a.mcpServers.feeds, { type: "stdio", command: "node", args: ["./dist/feeds-mcp.mjs"] });
+    assert.deepEqual(b.mcpServers.feeds, { command: "node", args: ["./dist/feeds-mcp.mjs"] });
+    assert.equal(codex.apps, undefined);
+  }
   assert.match(a.$schema, /\/1\.0\.0\/mcp\.schema\.json$/);
   assert.match(portable.$schema, /\/1\.0\.0\/plugin\.schema\.json$/);
 });
 
 async function installed() {
   const directory = await mkdtemp(join(tmpdir(), "feeds-plugin-"));
-  for (const name of ["plugin.json", "mcp.json", ".codex-plugin", ".mcp.json", "skills"]) {
+  for (const name of ["plugin.json", "mcp.json", ".codex-plugin", ".mcp.json", ".app.json", "skills"]) {
     await cp(join(root, name), join(directory, name), { recursive: true });
   }
   await mkdir(join(directory, "dist"));
