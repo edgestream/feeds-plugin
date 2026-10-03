@@ -58,10 +58,11 @@ administrator must confirm that this app resolves to
 `https://feeds.mcp.edgestream.cloud/mcp`, has the intended role assignments, and
 has not been replaced by a duplicate connection.
 
-Import or sync the wrapper as a native plugin whose source path is `web`, then
-inspect the saved import report. Configure the wrapper's installation policy for
-the intended roles and leave the app's existing role, action, and service
-controls in force. Each intended person starts a new Web conversation, selects
+The existing Marketplace `feeds` entry uses the `web` source path; do not add a
+second Web plugin. After syncing it, inspect the saved import report. Configure
+the plugin's installation policy for the intended roles and leave the app's
+existing role, action, and service controls in force. Each intended person starts
+a new Web conversation, selects
 **Feeds**, completes their own OAuth connection, and performs one bounded `get_feed`
 call for an X URL and one for a Bluesky URL. Record only redacted success/failure
 evidence; never record tokens, authorization codes, or feed contents. Unlinked
