@@ -26,20 +26,20 @@ Repository and plugin folder names need not match; installed plugin identity com
 
 ## ChatGPT Web packaging
 
-`web/` is a deliberately separate native plugin package. Its internal identity
-is `feeds-web`, while its displayed name, developer name, version, description,
-license, repository, keywords, and interface metadata remain aligned with stable
-**Feeds**. It contains no `mcp.json`, `.mcp.json`, inline MCP declaration, or
-bundled server. Instead, `.app.json` references the approved hosted workspace
-app `asdk_app_6ac0a8553c4481918b9d9782300f52db` as required, and its manifest
-sets `apps` to that file. This prevents another MCP registration and avoids the
+`web/` is a separate native source root using the stable `feeds` identity. Its
+developer name, version, description, license, repository, keywords, and
+interface metadata remain aligned with stable **Feeds**. It contains no
+`mcp.json`, `.mcp.json`, inline MCP declaration, or bundled server. Instead,
+`.app.json` references the approved hosted workspace app
+`asdk_app_6ac0a8553c4481918b9d9782300f52db` as required, and its manifest sets
+`apps` to that file. This prevents another MCP registration and avoids the
 Desktop-only classification for an imported workspace plugin.
 
-The workspace import must use the `web` subdirectory as its native plugin root.
-Do not replace the root package with this wrapper: the root package retains the
-stable hosted MCP connection for Codex/desktop and the local `Feeds Dev` channel.
-The release preparation script synchronizes the wrapper version with the root
-release metadata.
+The existing stable Marketplace `feeds` entry must use the `web` subdirectory as
+its native plugin root. It must not create an additional Marketplace entry. The
+root package retains the stable hosted MCP connection for Codex/desktop and the
+local `Feeds Dev` channel. The release preparation script synchronizes the
+wrapper version with the root release metadata.
 
 Release preparation selects both MCP configurations with the channel identity.
 Stable `Feeds` uses the hosted Streamable HTTP endpoint

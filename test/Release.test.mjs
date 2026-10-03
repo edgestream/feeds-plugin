@@ -73,7 +73,7 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(codex.version, version);
     const web = await json(directory, "web/.codex-plugin/plugin.json");
     assert.equal(web.version, version);
-    assert.equal(web.name, "feeds-web");
+    assert.equal(web.name, "feeds");
     const portableMcp = await json(directory, "mcp.json");
     const codexMcp = await json(directory, ".mcp.json");
     assert.match(portableMcp.$schema, /\/1\.0\.0\/mcp\.schema\.json$/);
