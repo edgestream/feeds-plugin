@@ -85,6 +85,10 @@ export async function planRelease(directory, { version, channel }) {
       : value.interface;
     if (!interfaceMetadata) throw new Error(`Missing plugin interface metadata: ${file}`);
     interfaceMetadata.displayName = displayName;
+    if (file === ".codex-plugin/plugin.json") {
+      if (channel === "stable") value.apps = "./.app.json";
+      else delete value.apps;
+    }
     await queueJson(file, value);
   }
   const mcpServer = channel === "stable"

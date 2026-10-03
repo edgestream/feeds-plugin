@@ -12,6 +12,10 @@ metadata and the OpenAI-specific `extensions.com.openai.interface` presentation
 metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
 `./.mcp.json` and adds install-surface metadata: a channel-specific display name,
 author, `Communications`, capability `Read`, and prompts for feeds, context and replies.
+The repository root also contains `.app.json`, the reference to the registered
+hosted Feeds app. It is intentionally unreferenced by the development manifest.
+Stable and development packages share this repository root; there is no separate
+web package or web-specific manifest.
 Both metadata surfaces reference the same local square logo and composer icon at
 `./assets/feeds-people-waves-128.png`. The asset is kept below 10 kB and
 is copied with the plugin; paths resolve from the installed plugin root. The
@@ -26,8 +30,9 @@ Release preparation selects both MCP configurations with the channel identity.
 Stable `Feeds` uses the hosted Streamable HTTP endpoint
 `https://feeds.mcp.edgestream.cloud/mcp`: portable `mcp.json` declares its
 `streamable-http` type and URL, while Codex `.mcp.json` declares the URL in its
-compatibility format. The hosted server supplies protected-resource metadata and
-OAuth challenges; no manifest includes OAuth credentials or a copied
+compatibility format. It also adds `apps: "./.app.json"` to the Codex manifest,
+activating the registered hosted app. The hosted server supplies protected-resource
+metadata and OAuth challenges; no manifest includes OAuth credentials or a copied
 authorization configuration.
 
 `Feeds Dev` keeps the local stdio configuration in both forms, starting
@@ -35,8 +40,8 @@ authorization configuration.
 in the installed plugin root. No undocumented plugin-root placeholder, `tsx`, or
 `node_modules` is required. Provider-selection environment variables are
 intentionally omitted so shared runtime defaults apply. A developer-marketplace
-installation remains local or self-hosted and does not grant hosted-service
-access. HTTP is a separate entry point documented in [MCP.md](MCP.md).
+installation remains local or self-hosted, has no `apps` field, and does not grant
+hosted-service access. HTTP is a separate entry point documented in [MCP.md](MCP.md).
 
 Marketplace installation, discovery, and updates are documented in
 [`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace#installation).
