@@ -8,8 +8,10 @@ MCP, or run it from the command line.
 
 ## Plugin
 
-The stable identity is `feeds` / **Feeds** and connects to the hosted MCP
-service with its registered app, so it is available in ChatGPT Web and Codex.
+The stable desktop identity is `feeds` / **Feeds** and connects to the hosted
+MCP service. ChatGPT Web uses the separate technical identity `feeds-web`, also
+displayed as **Feeds**, and references the same registered app without declaring
+another MCP server.
 Development uses `feeds-dev` / **Feeds Dev** and starts the bundled local stdio
 MCP server. The development channel does not reference the hosted app; a local
 developer-marketplace installation does not provide access to the hosted service.
