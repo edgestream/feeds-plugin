@@ -51,8 +51,8 @@ This repository owns the installable package; it does not deploy a remote server
 ## ChatGPT Web packaging
 
 `web/` is a deliberately separate, MCP-free native plugin package. Its internal
-identity is `feeds-web`; the presented name, developer, version, descriptions,
-and interface metadata remain those of stable **Feeds**. Its `.app.json`
+identity remains stable `feeds`; its presented name, developer, version,
+descriptions, and interface metadata remain those of stable **Feeds**. Its `.app.json`
 references the approved hosted Feeds app
 `asdk_app_6ac0cdbf693881919570de155357722d` as required, and its manifest sets
 `apps` to that file. It contains no `mcp.json`, `.mcp.json`, inline server, or
