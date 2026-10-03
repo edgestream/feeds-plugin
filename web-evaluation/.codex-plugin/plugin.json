@@ -1,0 +1,28 @@
+{
+  "name": "feeds-web-evaluation",
+  "version": "0.2.7",
+  "description": "Temporary validation of the hosted Feeds app reference",
+  "author": {
+    "name": "Edgestream"
+  },
+  "repository": "https://github.com/edgestream/feeds-plugin",
+  "license": "MIT",
+  "keywords": [
+    "feeds",
+    "social-media",
+    "communications",
+    "mcp"
+  ],
+  "apps": "./.app.json",
+  "interface": {
+    "displayName": "Feeds Web Evaluation",
+    "shortDescription": "Temporary validation of the hosted Feeds app reference",
+    "longDescription": "Temporary validation of the hosted Feeds app reference.",
+    "developerName": "Edgestream",
+    "category": "Communications",
+    "capabilities": [
+      "Read"
+    ],
+    "brandColor": "#212121"
+  }
+}
