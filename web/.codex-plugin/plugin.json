@@ -1,6 +1,6 @@
 {
   "name": "feeds-web",
-  "version": "0.2.0",
+  "version": "0.2.6",
   "description": "Read public social media feeds",
   "author": {
     "name": "Edgestream"
