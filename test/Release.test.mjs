@@ -12,7 +12,7 @@ const json = async (directory, file) => JSON.parse(await readFile(join(directory
 async function fixture(t) {
   const directory = await mkdtemp(join(tmpdir(), "feeds-release-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
-  for (const file of ["package.json", "package-lock.json", "plugin.json", "mcp.json", ".mcp.json", ".app.json", ".codex-plugin", "apps", "packages"]) {
+  for (const file of ["package.json", "package-lock.json", "plugin.json", "mcp.json", ".mcp.json", ".app.json", ".codex-plugin", "apps", "packages", "web"]) {
     await cp(join(root, file), join(directory, file), {
       recursive: true,
       filter: source => !source.split(/[\\/]/u).some(part => ["dist", "node_modules"].includes(part)),
@@ -35,6 +35,12 @@ test("committed versions and channel metadata agree", async () => {
       },
     },
   });
+  const web = await json(root, "web/.codex-plugin/plugin.json");
+  assert.equal(web.name, "feeds-web");
+  assert.equal(web.version, version);
+  assert.equal(web.apps, "./.app.json");
+  assert.equal(web.mcpServers, undefined);
+  assert.deepEqual(await json(root, "web/.app.json"), await json(root, ".app.json"));
 });
 
 test("release arguments reject ambiguous modes and invalid versions", () => {
@@ -79,6 +85,11 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(codex.interface.displayName, displayName);
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
+    const web = await json(directory, "web/.codex-plugin/plugin.json");
+    assert.equal(web.version, version);
+    assert.equal(web.name, "feeds-web");
+    assert.equal(web.apps, "./.app.json");
+    assert.equal(web.mcpServers, undefined);
     if (channel === "stable") assert.equal(codex.apps, "./.app.json");
     else assert.equal(codex.apps, undefined);
     const portableMcp = await json(directory, "mcp.json");

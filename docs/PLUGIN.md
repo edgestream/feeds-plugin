@@ -6,6 +6,7 @@ This plugin packages one read-only MCP service using two manifest pairs:
 | --- | --- | --- |
 | Portable agent plugin | `plugin.json`, `mcp.json` | [Agent Plugin Specification 1.0.0](https://github.com/agentplugins/agent-plugins-spec/blob/main/spec/1.0.0.md) |
 | Codex | `.codex-plugin/plugin.json`, `.mcp.json` | [Codex plugin packaging](https://developers.openai.com/plugins/build/plugins) |
+| ChatGPT Web | `web/.codex-plugin/plugin.json`, `web/.app.json` | Existing workspace app reference |
 
 The portable manifests declare matching 1.0.0 schemas. `plugin.json` carries
 metadata and the OpenAI-specific `extensions.com.openai.interface` presentation
@@ -14,8 +15,8 @@ metadata; `mcp.json` carries `mcpServers`. The Codex manifest references
 author, `Communications`, capability `Read`, and prompts for feeds, context and replies.
 The repository root also contains `.app.json`, the reference to the registered
 hosted Feeds app. It is intentionally unreferenced by the development manifest.
-Stable and development packages share this repository root; there is no separate
-web package or web-specific manifest.
+The Web package has its own copy because a package that declares an MCP server is
+classified as Desktop-only by Workspace import.
 Both metadata surfaces reference the same local square logo and composer icon at
 `./assets/feeds-people-waves-128.png`. The asset is kept below 10 kB and
 is copied with the plugin; paths resolve from the installed plugin root. The
@@ -47,6 +48,23 @@ Marketplace installation, discovery, and updates are documented in
 [`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace#installation).
 This repository owns the installable package; it does not deploy a remote server.
 
+## ChatGPT Web packaging
+
+`web/` is a deliberately separate, MCP-free native plugin package. Its internal
+identity is `feeds-web`; the presented name, developer, version, descriptions,
+and interface metadata remain those of stable **Feeds**. Its `.app.json`
+references the approved hosted Feeds app
+`asdk_app_6ac0cdbf693881919570de155357722d` as required, and its manifest sets
+`apps` to that file. It contains no `mcp.json`, `.mcp.json`, inline server, or
+bundled MCP implementation.
+
+The Marketplace has exactly one `feeds` entry. It uses the `web` subdirectory as
+the native plugin root and pins the existing Workspace instance with its
+`pluginId`; the wrapper neither creates a second Marketplace entry nor registers
+another MCP server. Release preparation synchronizes the wrapper version with
+the root package version. Do not replace the root package with the wrapper: the
+root retains the Codex/Desktop manifests and the local `Feeds Dev` channel.
+
 ## Skill packaging
 
 The companion [read-x skill](../skills/read-x/SKILL.md) ships at the portable
@@ -76,3 +94,7 @@ and MCP bundles from isolated installations without `node_modules`. MCP clients
 initialize, discover the tool, and retrieve injected upstream data. These tests
 verify packaging and explicit calls, not automatic skill activation; that evidence
 belongs in [SKILL.md](SKILL.md#recorded-status).
+
+For the Web wrapper, tests also assert the exact required app ID and the absence
+of an MCP declaration. Workspace import, role availability, individual OAuth
+connections, and bounded live X/Bluesky calls are operational acceptance evidence.
