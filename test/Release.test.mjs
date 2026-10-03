@@ -36,7 +36,7 @@ test("committed versions and channel metadata agree", async () => {
     },
   });
   const web = await json(root, "web/.codex-plugin/plugin.json");
-  assert.equal(web.name, "feeds-web");
+  assert.equal(web.name, "feeds");
   assert.equal(web.version, version);
   assert.equal(web.apps, "./.app.json");
   assert.equal(web.mcpServers, undefined);
@@ -87,7 +87,7 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(codex.version, version);
     const web = await json(directory, "web/.codex-plugin/plugin.json");
     assert.equal(web.version, version);
-    assert.equal(web.name, "feeds-web");
+    assert.equal(web.name, "feeds");
     assert.equal(web.apps, "./.app.json");
     assert.equal(web.mcpServers, undefined);
     if (channel === "stable") assert.equal(codex.apps, "./.app.json");
