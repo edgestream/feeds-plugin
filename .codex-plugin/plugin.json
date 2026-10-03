@@ -16,7 +16,7 @@
   "mcpServers": "./.mcp.json",
   "skills": "./skills/",
   "interface": {
-    "displayName": "Feeds",
+    "displayName": "Feeds Dev",
     "shortDescription": "Read public social media feeds",
     "longDescription": "Read public posts, available context, replies and author feeds from supported social platforms.",
     "developerName": "Edgestream",

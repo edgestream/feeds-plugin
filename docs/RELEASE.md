@@ -41,7 +41,11 @@ It manages:
 - `package-lock.json`: top-level version, root package, and local workspace
   entries. External dependency versions and integrity metadata remain unchanged.
 - `plugin.json` and `.codex-plugin/plugin.json`: version, plugin name, and
-  matching display names selected by channel.
+  matching display names selected by channel. Stable preparation adds
+  `apps: "./.app.json"` only to the Codex manifest; development preparation
+  removes it.
+- `.app.json`: the checked-in reference to the registered hosted Feeds app. It is
+  static release input; the script never changes its app ID or requirements.
 - `mcp.json` and `.mcp.json`: complete channel-specific MCP configuration. Stable
   uses the hosted Streamable HTTP endpoint; development uses the bundled stdio
   process. The portable and Codex formats intentionally differ.
@@ -154,7 +158,8 @@ credentials for the separate marketplace repository.
 Follow the [marketplace promotion guide](https://github.com/edgestream/agent-marketplace/blob/main/docs/PROMOTION.md)
 for listing changes, channel policy, installation/update verification, and
 marketplace recovery. Hand over the published tag and exact verified commit.
-Host skill behavior evidence remains in [SKILL.md](SKILL.md).
+Promote the stable package from the repository root; it is not a separate `web/`
+package. Host skill behavior evidence remains in [SKILL.md](SKILL.md).
 
 ## Backports, retries, and rollback
 

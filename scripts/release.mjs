@@ -85,11 +85,12 @@ export async function planRelease(directory, { version, channel }) {
       : value.interface;
     if (!interfaceMetadata) throw new Error(`Missing plugin interface metadata: ${file}`);
     interfaceMetadata.displayName = displayName;
+    if (file === ".codex-plugin/plugin.json") {
+      if (channel === "stable") value.apps = "./.app.json";
+      else delete value.apps;
+    }
     await queueJson(file, value);
   }
-  const webManifest = await readJson("web/.codex-plugin/plugin.json");
-  webManifest.version = version;
-  await queueJson("web/.codex-plugin/plugin.json", webManifest);
   const mcpServer = channel === "stable"
     ? { type: "streamable-http", url: hostedMcpUrl }
     : { type: "stdio", command: "node", args: ["./dist/feeds-mcp.mjs"] };
