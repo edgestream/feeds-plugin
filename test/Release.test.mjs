@@ -42,22 +42,17 @@ test("committed versions and channel metadata agree", async () => {
       },
     },
   });
-  assert.deepEqual(await json(root, "web/.codex-plugin/plugin.json"), {
-    apps: "./.app.json",
-    author: { name: "App developer" },
-    description: "Read public social media feeds",
-    interface: {
-      capabilities: [],
-      category: "Communication",
-      defaultPrompt: null,
-      developerName: "App developer",
-      displayName: "Feeds",
-      longDescription: "Read public social media feeds",
-      shortDescription: "Read public social media feeds",
-    },
-    name: "dev-6ac49879ccc481918f51562ec1d84797",
-    version: "1.0.0",
-  });
+  const web = await json(root, "web/.codex-plugin/plugin.json");
+  assert.equal(web.name, "dev-6ac49879ccc481918f51562ec1d84797");
+  assert.equal(web.apps, "./.app.json");
+  assert.equal(web.interface.displayName, "Feeds");
+  assert.equal(web.interface.category, "Communication");
+  assert.equal(web.interface.developerName, "Edgestream");
+  assert.equal(web.author.name, "Edgestream");
+  assert.equal(web.mcpServers, undefined);
+  for (const asset of [web.interface.composerIcon, web.interface.logo]) {
+    assert.ok((await readFile(join(root, "web", asset))).length > 0);
+  }
 });
 
 test("release arguments reject ambiguous modes and invalid versions", () => {
@@ -73,6 +68,7 @@ test("release arguments reject ambiguous modes and invalid versions", () => {
 test("preview is read-only; stable, patch and development preparation are repeatable", async t => {
   const directory = await fixture(t);
   const originalLock = await json(directory, "package-lock.json");
+  const originalWeb = await json(directory, "web/.codex-plugin/plugin.json");
   const before = await readFile(join(directory, "plugin.json"), "utf8");
   const options = { version: "0.1.0", channel: "stable", mode: "preview" };
   const preview = await prepareRelease(directory, options);
@@ -103,11 +99,7 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
     const web = await json(directory, "web/.codex-plugin/plugin.json");
-    assert.equal(web.version, "1.0.0");
-    assert.equal(web.name, "dev-6ac49879ccc481918f51562ec1d84797");
-    assert.equal(web.apps, "./.app.json");
-    assert.equal(web.skills, undefined);
-    assert.equal(web.mcpServers, undefined);
+    assert.deepEqual(web, originalWeb);
     if (channel === "stable") assert.equal(codex.apps, "./.app.json");
     else assert.equal(codex.apps, undefined);
     const portableMcp = await json(directory, "mcp.json");

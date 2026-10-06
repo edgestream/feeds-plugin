@@ -44,9 +44,9 @@ It manages:
   matching display names selected by channel. Stable preparation adds
   `apps: "./.app.json"` only to the Codex manifest; development preparation
   removes it.
-- `web/.codex-plugin/plugin.json` and `web/.app.json`: the unmodified manifest
-  export of the MCP-free ChatGPT Web wrapper. Its app-generated technical name,
-  version, presentation, and app reference are static release input.
+- `web/.codex-plugin/plugin.json` and `web/.app.json`: the MCP-free ChatGPT Web
+  package. Its technical name and app reference preserve the existing workspace
+  identity; its metadata evolves on `main` independently of release preparation.
 - `.app.json`: the checked-in reference to the registered hosted Feeds app. It is
   static release input; the script never changes its app ID or requirements.
 - `mcp.json` and `.mcp.json`: complete channel-specific MCP configuration. Stable

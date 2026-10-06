@@ -50,19 +50,20 @@ This repository owns the installable package; it does not deploy a remote server
 
 ## ChatGPT Web packaging
 
-`web/` is a deliberately separate, MCP-free native plugin package. Its two
-manifest files are the unmodified export of the existing app-generated workspace
-plugin: technical name `dev-6ac49879ccc481918f51562ec1d84797`, version `1.0.0`,
-and app reference `asdk_app_6ac49879ccc481918f51562ec1d84797`. It displays as
-**Feeds**. The root Codex/Desktop package retains the `feeds` name and independent
-release versioning. The Web manifest contains no `mcp.json`, `.mcp.json`, inline
-server, or bundled MCP implementation.
+`web/` is a separate, MCP-free native plugin package based on the existing
+app-generated workspace plugin. It retains technical name
+`dev-6ac49879ccc481918f51562ec1d84797` and app reference
+`asdk_app_6ac49879ccc481918f51562ec1d84797`, and displays as **Feeds**. Its
+presentation metadata and companion skills can evolve on `main`. The root
+Codex/Desktop package retains the `feeds` name and independent versioning. The
+Web package contains no `mcp.json`, `.mcp.json`, inline server, or bundled MCP
+implementation.
 
-The exported Web manifest does not declare a bundled skill. The root Edgestream
-Marketplace maps its `dev-…` name and the existing workspace `pluginId` to this
-Web package. Release preparation deliberately does not rewrite either Web
-manifest. Do not replace the root package with the wrapper: the root retains the
-Codex/Desktop manifests and the local `Feeds Dev` channel.
+The root Edgestream Marketplace maps the `dev-…` name and existing workspace
+`pluginId` to `web/`. Asset and skill paths resolve from `web/`, so referenced
+files must live under that directory. Release preparation does not rewrite the
+Web manifests. The root retains the Codex/Desktop manifests and local `Feeds Dev`
+channel.
 
 ## Skill packaging
 
@@ -94,7 +95,7 @@ initialize, discover the tool, and retrieve injected upstream data. These tests
 verify packaging and explicit calls, not automatic skill activation; that evidence
 belongs in [SKILL.md](SKILL.md#recorded-status).
 
-For the Web wrapper, tests also assert the exact required app ID and the absence
-of an MCP declaration. They verify its native skill path. Workspace import,
+For the Web wrapper, tests also assert the exact required app ID, local asset
+paths, and the absence of an MCP declaration. Workspace import,
 role availability, individual OAuth
 connections, and bounded live X/Bluesky calls are operational acceptance evidence.
