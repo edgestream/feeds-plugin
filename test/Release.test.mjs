@@ -48,7 +48,7 @@ test("committed versions and channel metadata agree", async () => {
     description: "Read public social media feeds",
     interface: {
       capabilities: [],
-      category: "Other",
+      category: "Communication",
       defaultPrompt: null,
       developerName: "App developer",
       displayName: "Feeds",
