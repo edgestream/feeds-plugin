@@ -15,8 +15,11 @@
     "developerName": "Edgestream",
     "displayName": "Feeds",
     "longDescription": "Read public posts and author feeds from supported social media platforms.",
-    "shortDescription": "Read public social media feeds"
+    "shortDescription": "Read public social media feeds",  
+    "brandColor": "#212121",
+    "composerIcon": "./assets/feeds-people-waves-128.png",
+    "logo": "./assets/feeds-people-waves-128.png"
   },
   "name": "dev-6ac49879ccc481918f51562ec1d84797",
-  "version": "0.2.10"  
+  "version": "0.2.10"
 }
