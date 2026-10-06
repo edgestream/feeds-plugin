@@ -51,18 +51,22 @@ This repository owns the installable package; it does not deploy a remote server
 ## ChatGPT Web packaging
 
 `web/` is a deliberately separate, MCP-free native plugin package. Its internal
-identity is `feeds-web`; its presented name, developer, version, descriptions,
-and interface metadata remain those of stable **Feeds**. Its `.app.json`
-references the approved hosted Feeds app
-`asdk_app_6ac0cdbf693881919570de155357722d` as required, and its manifest sets
+identity and displayed name are stable **Feeds** (`feeds`); its developer,
+version, descriptions, and interface metadata remain aligned with the release.
+Its `.app.json` references the hosted Feeds app
+`asdk_app_6ac49879ccc481918f51562ec1d84797` as required, and its manifest sets
 `apps` to that file. It contains no `mcp.json`, `.mcp.json`, inline server, or
 bundled MCP implementation.
 
-The Marketplace has one active Web entry, `feeds-web`, using the `web`
-subdirectory as its native plugin root. The wrapper does not register another
-MCP server. Release preparation synchronizes the wrapper version with the root
-package version. Do not replace the root package with the wrapper: the root
-retains the Codex/Desktop manifests and the local `Feeds Dev` channel.
+The Web package includes one [read-feeds skill](../web/skills/read-feeds/SKILL.md)
+at `skills/read-feeds/SKILL.md` and declares `skills: "./skills/"` in its native
+manifest. This path is inside the `web/` source selected for workspace import.
+The Marketplace currently has no Feeds entry. Import only after the app-generated
+plugin has been shared to the workspace and its exact ID is known; use the
+documented `pluginId` takeover path and verify that no second plugin is created.
+Release preparation synchronizes the wrapper version with the root package
+version. Do not replace the root package with the wrapper: the root retains the
+Codex/Desktop manifests and the local `Feeds Dev` channel.
 
 ## Skill packaging
 
@@ -95,5 +99,6 @@ verify packaging and explicit calls, not automatic skill activation; that eviden
 belongs in [SKILL.md](SKILL.md#recorded-status).
 
 For the Web wrapper, tests also assert the exact required app ID and the absence
-of an MCP declaration. Workspace import, role availability, individual OAuth
+of an MCP declaration. They verify its native skill path. Workspace import,
+role availability, individual OAuth
 connections, and bounded live X/Bluesky calls are operational acceptance evidence.

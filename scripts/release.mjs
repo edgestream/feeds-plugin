@@ -92,7 +92,7 @@ export async function planRelease(directory, { version, channel }) {
     await queueJson(file, value);
   }
   const webManifest = await readJson("web/.codex-plugin/plugin.json");
-  webManifest.name = "feeds-web";
+  webManifest.name = "feeds";
   webManifest.version = version;
   await queueJson("web/.codex-plugin/plugin.json", webManifest);
   const mcpServer = channel === "stable"

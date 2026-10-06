@@ -13,6 +13,8 @@ export async function main(): Promise<void> {
   if (!loopbackHosts.has(host)) console.error("WARNING: Feeds MCP HTTP is remotely reachable. Use HTTPS and an authenticated reverse proxy or Secure MCP Tunnel.");
   const authentication = hostedAuthentication(process.env);
   const hostedLimits = hostedLimitsFrom(process.env);
+  // Validate providers before listening; request-local services are created below.
+  createFeed();
   const hostedPolicies = new Map<string, HostedFxEmbedPolicy>();
   const hostedState = createHostedFxEmbedState();
   if (!loopbackHosts.has(host) && authentication === undefined) throw new Error("Remotely reachable Feeds MCP requires OAuth adapter verifier configuration.");
