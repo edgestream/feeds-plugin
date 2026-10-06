@@ -7,12 +7,16 @@
   "interface": {
     "capabilities": [],
     "category": "Communication",
-    "defaultPrompt": null,
+    "defaultPrompt": [
+      "Read feed for https://x.com/OpenAI",
+      "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
+      "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
+    ],
     "developerName": "Edgestream",
     "displayName": "Feeds",
     "longDescription": "Read public social media feeds",
-    "shortDescription": "Read public social media feeds"
+    "shortDescription": "Read public social media feeds",
   },
   "name": "dev-6ac49879ccc481918f51562ec1d84797",
-  "version": "0.2.10"
+  "version": "0.2.10"  
 }
