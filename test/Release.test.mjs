@@ -35,14 +35,29 @@ test("committed versions and channel metadata agree", async () => {
       },
     },
   });
-  const web = await json(root, "web/.codex-plugin/plugin.json");
-  assert.equal(web.name, "dev-6ac49879ccc481918f51562ec1d84797");
-  assert.equal(web.version, version);
-  assert.equal(web.apps, "./.app.json");
-  assert.equal(web.skills, "./skills/");
-  assert.equal(web.mcpServers, undefined);
-  assert.deepEqual(await json(root, "web/.app.json"), await json(root, ".app.json"));
-  assert.match(await readFile(join(root, "web/skills/read-feeds/SKILL.md"), "utf8"), /get_feed/u);
+  assert.deepEqual(await json(root, "web/.app.json"), {
+    apps: {
+      "dev-6ac49879ccc481918f51562ec1d84797": {
+        id: "asdk_app_6ac49879ccc481918f51562ec1d84797",
+      },
+    },
+  });
+  assert.deepEqual(await json(root, "web/.codex-plugin/plugin.json"), {
+    apps: "./.app.json",
+    author: { name: "App developer" },
+    description: "Read public social media feeds",
+    interface: {
+      capabilities: [],
+      category: "Other",
+      defaultPrompt: null,
+      developerName: "App developer",
+      displayName: "Feeds",
+      longDescription: "Read public social media feeds",
+      shortDescription: "Read public social media feeds",
+    },
+    name: "dev-6ac49879ccc481918f51562ec1d84797",
+    version: "1.0.0",
+  });
 });
 
 test("release arguments reject ambiguous modes and invalid versions", () => {
@@ -88,10 +103,10 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(portable.version, version);
     assert.equal(codex.version, version);
     const web = await json(directory, "web/.codex-plugin/plugin.json");
-    assert.equal(web.version, version);
+    assert.equal(web.version, "1.0.0");
     assert.equal(web.name, "dev-6ac49879ccc481918f51562ec1d84797");
     assert.equal(web.apps, "./.app.json");
-    assert.equal(web.skills, "./skills/");
+    assert.equal(web.skills, undefined);
     assert.equal(web.mcpServers, undefined);
     if (channel === "stable") assert.equal(codex.apps, "./.app.json");
     else assert.equal(codex.apps, undefined);
