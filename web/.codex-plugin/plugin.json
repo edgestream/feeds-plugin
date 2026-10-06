@@ -1,14 +1,14 @@
 {
   "apps": "./.app.json",
   "author": {
-    "name": "App developer"
+    "name": "Edgestream"
   },
   "description": "Read public social media feeds",
   "interface": {
     "capabilities": [],
     "category": "Communication",
     "defaultPrompt": null,
-    "developerName": "App developer",
+    "developerName": "Edgestream",
     "displayName": "Feeds",
     "longDescription": "Read public social media feeds",
     "shortDescription": "Read public social media feeds"
