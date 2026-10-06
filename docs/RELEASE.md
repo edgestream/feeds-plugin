@@ -45,8 +45,8 @@ It manages:
   `apps: "./.app.json"` only to the Codex manifest; development preparation
   removes it.
 - `web/.codex-plugin/plugin.json`: the version of the MCP-free ChatGPT Web
-  wrapper. Its `feeds` identity, stable Feeds presentation, app reference, and
-  bundled companion skill are static release input.
+  wrapper. Its app-generated technical name, stable Feeds presentation, app
+  reference, and bundled companion skill are static release input.
 - `.app.json`: the checked-in reference to the registered hosted Feeds app. It is
   static release input; the script never changes its app ID or requirements.
 - `mcp.json` and `.mcp.json`: complete channel-specific MCP configuration. Stable
