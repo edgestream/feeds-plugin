@@ -50,22 +50,18 @@ This repository owns the installable package; it does not deploy a remote server
 
 ## ChatGPT Web packaging
 
-`web/` is a deliberately separate, MCP-free native plugin package. Its internal
-identity and displayed name are stable **Feeds** (`feeds`); its developer,
-version, descriptions, and interface metadata remain aligned with the release.
-Its `.app.json` references the hosted Feeds app
-`asdk_app_6ac49879ccc481918f51562ec1d84797` as required, and its manifest sets
-`apps` to that file. It contains no `mcp.json`, `.mcp.json`, inline server, or
-bundled MCP implementation.
+`web/` is a deliberately separate, MCP-free native plugin package. Its two
+manifest files are the unmodified export of the existing app-generated workspace
+plugin: technical name `dev-6ac49879ccc481918f51562ec1d84797`, version `1.0.0`,
+and app reference `asdk_app_6ac49879ccc481918f51562ec1d84797`. It displays as
+**Feeds**. The root Codex/Desktop package retains the `feeds` name and independent
+release versioning. The Web manifest contains no `mcp.json`, `.mcp.json`, inline
+server, or bundled MCP implementation.
 
-The Web package includes one [read-feeds skill](../web/skills/read-feeds/SKILL.md)
-at `skills/read-feeds/SKILL.md` and declares `skills: "./skills/"` in its native
-manifest. This path is inside the `web/` source selected for workspace import.
-The Marketplace currently has no Feeds entry. Import only after the app-generated
-plugin has been shared to the workspace and its exact ID is known; use the
-documented `pluginId` takeover path and verify that no second plugin is created.
-Release preparation synchronizes the wrapper version with the root package
-version. Do not replace the root package with the wrapper: the root retains the
+The exported Web manifest does not declare a bundled skill. The root Edgestream
+Marketplace maps its `dev-…` name and the existing workspace `pluginId` to this
+Web package. Release preparation deliberately does not rewrite either Web
+manifest. Do not replace the root package with the wrapper: the root retains the
 Codex/Desktop manifests and the local `Feeds Dev` channel.
 
 ## Skill packaging
