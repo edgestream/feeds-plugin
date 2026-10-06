@@ -7,6 +7,11 @@ instructions need to change. Manifest discovery and installation layout belong i
 [PLUGIN.md](PLUGIN.md#skill-packaging), tool semantics in [MCP.md](MCP.md#tool),
 and upstream behavior in the [provider README](../packages/provider-fxembed/README.md).
 
+The hosted Web package includes one [read-feeds skill](../web/skills/read-feeds/SKILL.md)
+covering both X and Bluesky. It follows the same routing, URL-preservation,
+pagination, failure, and explicit-tool-choice rules below. Its installed-host
+activation remains unverified until the workspace import is accepted.
+
 ## Activation and routing
 
 The `read-x` skill routes requests to read, show, summarize, or explain an

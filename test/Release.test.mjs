@@ -30,17 +30,19 @@ test("committed versions and channel metadata agree", async () => {
   assert.deepEqual(await json(root, ".app.json"), {
     apps: {
       feeds: {
-        id: "asdk_app_6ac0cdbf693881919570de155357722d",
+        id: "asdk_app_6ac49879ccc481918f51562ec1d84797",
         required: true,
       },
     },
   });
   const web = await json(root, "web/.codex-plugin/plugin.json");
-  assert.equal(web.name, "feeds-web");
+  assert.equal(web.name, "feeds");
   assert.equal(web.version, version);
   assert.equal(web.apps, "./.app.json");
+  assert.equal(web.skills, "./skills/");
   assert.equal(web.mcpServers, undefined);
   assert.deepEqual(await json(root, "web/.app.json"), await json(root, ".app.json"));
+  assert.match(await readFile(join(root, "web/skills/read-feeds/SKILL.md"), "utf8"), /get_feed/u);
 });
 
 test("release arguments reject ambiguous modes and invalid versions", () => {
@@ -87,8 +89,9 @@ test("preview is read-only; stable, patch and development preparation are repeat
     assert.equal(codex.version, version);
     const web = await json(directory, "web/.codex-plugin/plugin.json");
     assert.equal(web.version, version);
-    assert.equal(web.name, "feeds-web");
+    assert.equal(web.name, "feeds");
     assert.equal(web.apps, "./.app.json");
+    assert.equal(web.skills, "./skills/");
     assert.equal(web.mcpServers, undefined);
     if (channel === "stable") assert.equal(codex.apps, "./.app.json");
     else assert.equal(codex.apps, undefined);
