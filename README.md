@@ -9,7 +9,7 @@ MCP, or run it from the command line.
 ## Plugin
 
 The stable desktop identity is `feeds` / **Feeds** and connects to the hosted
-MCP service. ChatGPT Web uses the separate technical identity `feeds-web`, also
+MCP service. ChatGPT Web uses a separate MCP-free package with the same `feeds` identity, also
 displayed as **Feeds**, and references the same registered app without declaring
 another MCP server.
 Development uses `feeds-dev` / **Feeds Dev** and starts the bundled local stdio

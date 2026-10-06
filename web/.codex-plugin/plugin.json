@@ -1,5 +1,5 @@
 {
-  "name": "feeds-web",
+  "name": "feeds",
   "version": "0.2.0",
   "description": "Read public social media feeds",
   "author": {
@@ -14,6 +14,7 @@
     "mcp"
   ],
   "apps": "./.app.json",
+  "skills": "./skills/",
   "interface": {
     "displayName": "Feeds",
     "shortDescription": "Read public social media feeds",
