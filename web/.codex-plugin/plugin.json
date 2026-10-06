@@ -14,5 +14,8 @@
     "shortDescription": "Read public social media feeds"
   },
   "name": "dev-6ac49879ccc481918f51562ec1d84797",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "brandColor": "#212121",
+  "composerIcon": "./assets/feeds-people-waves-128.png",
+  "logo": "./assets/feeds-people-waves-128.png"
 }
