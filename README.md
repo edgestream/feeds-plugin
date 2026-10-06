@@ -8,14 +8,6 @@ MCP, or run it from the command line.
 
 ## Plugin
 
-The stable desktop identity is `feeds` / **Feeds** and connects to the hosted
-MCP service. ChatGPT Web uses the workspace plugin's `web/` manifest. It displays
-as **Feeds** and references the same registered app without declaring another MCP
-server.
-Development uses `feeds-dev` / **Feeds Dev** and starts the bundled local stdio
-MCP server. The development channel does not reference the hosted app; a local
-developer-marketplace installation does not provide access to the hosted service.
-
 See the [marketplace installation guide](https://github.com/edgestream/agent-marketplace#installation)
 for installation, channel selection, and updates.
 
