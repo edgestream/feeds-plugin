@@ -45,8 +45,8 @@ It manages:
   `apps: "./.app.json"` only to the Codex manifest; development preparation
   removes it.
 - `web/.codex-plugin/plugin.json`: the version of the MCP-free ChatGPT Web
-  wrapper. Its `feeds-web` identity, stable Feeds presentation, and app reference
-  are static release input.
+  wrapper. Its `feeds` identity, stable Feeds presentation, app reference, and
+  bundled companion skill are static release input.
 - `.app.json`: the checked-in reference to the registered hosted Feeds app. It is
   static release input; the script never changes its app ID or requirements.
 - `mcp.json` and `.mcp.json`: complete channel-specific MCP configuration. Stable
@@ -162,10 +162,11 @@ Follow the [marketplace promotion guide](https://github.com/edgestream/agent-mar
 for listing changes, channel policy, installation/update verification, and
 marketplace recovery. Hand over the published tag and exact verified commit.
 Promote the stable package from the repository root; it is not a separate `web/`
-package for Codex/Desktop. For ChatGPT Web, promote the `web/` native package
-through the single Feeds Marketplace entry and retain its existing Workspace
-`pluginId`; do not create a second entry. Host skill behavior evidence remains in
-[SKILL.md](SKILL.md).
+package for Codex/Desktop. For ChatGPT Web, first share the app-generated plugin
+to the intended workspace roles. Then import the `web/` native package through
+one Feeds Marketplace entry with that exact Workspace `pluginId`. Verify the
+import retains the ID; stop if it creates a second plugin or rejects takeover.
+Host skill behavior evidence remains in [SKILL.md](SKILL.md).
 
 ## Backports, retries, and rollback
 
