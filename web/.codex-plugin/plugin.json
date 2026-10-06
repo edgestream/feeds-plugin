@@ -1,25 +1,36 @@
 {
-  "apps": "./.app.json",
+  "name": "dev-6ac49879ccc481918f51562ec1d84797",
+  "version": "0.2.10",
+  "description": "Read public social media feeds",
   "author": {
     "name": "Edgestream"
   },
-  "description": "Read public social media feeds",
+  "repository": "https://github.com/edgestream/feeds-plugin",
+  "license": "MIT",
+  "keywords": [
+    "feeds",
+    "social-media",
+    "communications",
+    "mcp"
+  ],
+  "apps": "./.app.json",
+  "skills": "./skills/",
   "interface": {
-    "capabilities": [],
+    "displayName": "Feeds",
+    "shortDescription": "Read public social media feeds",  
+    "longDescription": "Read public posts and author feeds from supported social media platforms.",
+    "developerName": "Edgestream",
     "category": "Communication",
+    "capabilities": [
+      "Read"
+    ],
     "defaultPrompt": [
       "Read feed for https://x.com/OpenAI",
       "Show this post and its context: https://x.com/OpenAI/status/2082577277246972300",
       "Read the available replies to this post: https://x.com/OpenAI/status/2082577277246972300"
     ],
-    "developerName": "Edgestream",
-    "displayName": "Feeds",
-    "longDescription": "Read public posts and author feeds from supported social media platforms.",
-    "shortDescription": "Read public social media feeds",  
     "brandColor": "#212121",
     "composerIcon": "./assets/feeds-people-waves-128.png",
     "logo": "./assets/feeds-people-waves-128.png"
-  },
-  "name": "dev-6ac49879ccc481918f51562ec1d84797",
-  "version": "0.2.10"
+  }
 }
