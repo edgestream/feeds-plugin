@@ -57,7 +57,7 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
     assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["feeds:read"] });
     const schemas = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }) });
     assert.equal(schemas.status, 200);
-    assert.match(await schemas.text(), /"securitySchemes":\[\{"type":"oauth2","scopes":\["feeds:read"\]\}\]/u);
+    assert.match(await schemas.text(), /"securitySchemes":\[\{"type":"oauth2","scopes":\["openid","offline_access","feeds:read"\]\}\]/u);
     assert.equal(providerCalls, 0);
 
     const spoofedHost = await new Promise<number | undefined>((resolve, reject) => {
