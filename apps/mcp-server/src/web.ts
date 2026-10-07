@@ -176,7 +176,10 @@ function isProtectedResourceMetadataRequest(path: string): boolean {
 
 function protectedResourceMetadataResponse(method: string | undefined, authentication: NonNullable<FeedsMcpHttpOptions["authentication"]>): Response {
   if (method !== "GET" && method !== "HEAD") return new Response("Method not allowed.", { status: 405, headers: { allow: "GET, HEAD" } });
-  const result = Response.json({ resource: authentication.resource, authorization_servers: [authentication.issuer], scopes_supported: ["feeds:read"] });
+  // ChatGPT builds the initial authorization scope set from protected-resource
+  // metadata. Advertise the OIDC renewal scope here as well as on the tool so
+  // it can obtain a refresh token rather than only a five-minute access token.
+  const result = Response.json({ resource: authentication.resource, authorization_servers: [authentication.issuer], scopes_supported: [...hostedOAuthScopes] });
   return method === "HEAD" ? new Response(null, { status: result.status, headers: result.headers }) : result;
 }
 

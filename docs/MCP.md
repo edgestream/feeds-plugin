@@ -144,7 +144,9 @@ configuration as well as `FEEDS_MCP_HTTP_ALLOW_REMOTE=true`. The server publishe
 RFC 9728 protected-resource metadata at both
 `/.well-known/oauth-protected-resource` and
 `/.well-known/oauth-protected-resource/mcp`, naming the exact resource, the
-configured authorization issuer, and the sole supported scope, `feeds:read`.
+configured authorization issuer, and the supported scopes `openid`,
+`offline_access`, and `feeds:read`. Only `feeds:read` authorizes a Feeds call;
+the OIDC scopes enable a renewable OAuth connection.
 
 The hosted `get_feed` tool requests `openid`, `offline_access`, and
 `feeds:read` during authorization. Only `feeds:read` authorizes a Feeds call;
