@@ -3,6 +3,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createMcpHandler, hostHeaderValidationResponse, originValidationResponse, type McpServerFactory } from "@modelcontextprotocol/server";
 import type { FeedsTokenVerifier, VerifiedFeedsPrincipal } from "./auth.js";
+import { hostedOAuthScopes } from "./createServer.js";
 
 export interface FeedsMcpHttpOptions {
   readonly host: string;
@@ -109,7 +110,7 @@ function patchToolList(value: unknown): unknown {
   if (!Array.isArray(message.result?.tools)) return value;
   const tool = message.result.tools.find(candidate => typeof candidate === "object" && candidate !== null && (candidate as { name?: unknown }).name === "get_feed") as Record<string, unknown> | undefined;
   if (!tool) return value;
-  tool.securitySchemes = [{ type: "oauth2", scopes: ["feeds:read"] }];
+  tool.securitySchemes = [{ type: "oauth2", scopes: [...hostedOAuthScopes] }];
   return value;
 }
 
@@ -175,7 +176,10 @@ function isProtectedResourceMetadataRequest(path: string): boolean {
 
 function protectedResourceMetadataResponse(method: string | undefined, authentication: NonNullable<FeedsMcpHttpOptions["authentication"]>): Response {
   if (method !== "GET" && method !== "HEAD") return new Response("Method not allowed.", { status: 405, headers: { allow: "GET, HEAD" } });
-  const result = Response.json({ resource: authentication.resource, authorization_servers: [authentication.issuer], scopes_supported: ["feeds:read"] });
+  // ChatGPT builds the initial authorization scope set from protected-resource
+  // metadata. Advertise the OIDC renewal scope here as well as on the tool so
+  // it can obtain a refresh token rather than only a five-minute access token.
+  const result = Response.json({ resource: authentication.resource, authorization_servers: [authentication.issuer], scopes_supported: [...hostedOAuthScopes] });
   return method === "HEAD" ? new Response(null, { status: result.status, headers: result.headers }) : result;
 }
 
