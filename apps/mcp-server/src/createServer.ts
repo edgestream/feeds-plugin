@@ -11,6 +11,9 @@ export interface FeedsMcpOptions {
   readonly hostedAuthentication?: { readonly resource: string };
 }
 
+/** OAuth scopes requested by the hosted tool; only feeds:read is an access-token permission. */
+export const hostedOAuthScopes = ["openid", "offline_access", "feeds:read"] as const;
+
 /** Transport adapter; concrete platforms and providers are composed only by runtime. */
 export function createFeedsMcpServer({ feeds, version = packageVersion, hostedAuthentication }: FeedsMcpOptions): McpServer {
   const server = new McpServer({ name: "feeds", version }, {
@@ -22,7 +25,7 @@ export function createFeedsMcpServer({ feeds, version = packageVersion, hostedAu
     inputSchema,
     // MCP SDK 2.0 forwards the OpenAI compatibility mirror while its public
     // tool descriptor does not yet serialize securitySchemes.
-    ...(hostedAuthentication === undefined ? {} : { securitySchemes: [{ type: "oauth2" as const, scopes: ["feeds:read"] }], _meta: { securitySchemes: [{ type: "oauth2", scopes: ["feeds:read"] }] } }),
+    ...(hostedAuthentication === undefined ? {} : { securitySchemes: [{ type: "oauth2" as const, scopes: [...hostedOAuthScopes] }], _meta: { securitySchemes: [{ type: "oauth2", scopes: [...hostedOAuthScopes] }] } }),
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   }, async ({ source, ...options }, context) => {
     try {
