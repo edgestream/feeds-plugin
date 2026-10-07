@@ -203,7 +203,7 @@ test("installed HTTP bundle publishes OAuth metadata and challenges before provi
     });
     const origin = `http://127.0.0.1:${port}`;
     const metadata = await fetch(`${origin}/.well-known/oauth-protected-resource`);
-    assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["feeds:read"] });
+    assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["openid", "offline_access", "feeds:read"] });
     const rejected = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "get_feed", arguments: { source: "https://x.com/a/status/123" } } }) });
     assert.equal(rejected.status, 200);
     const denied = await rejected.json();
