@@ -146,6 +146,13 @@ RFC 9728 protected-resource metadata at both
 `/.well-known/oauth-protected-resource/mcp`, naming the exact resource, the
 configured authorization issuer, and the sole supported scope, `feeds:read`.
 
+The hosted `get_feed` tool requests `openid`, `offline_access`, and
+`feeds:read` during authorization. Only `feeds:read` authorizes a Feeds call;
+the OIDC scopes let a conforming client retain and renew its connection. A
+connection created before those scopes were published must be reauthorized once
+so the client can receive a refresh token. The adapter retains exact resource,
+issuer, subject, expiry, and `feeds:read` checks for every renewed access token.
+
 The only public MCP protocol calls are `initialize` and `tools/list`, so a client
 can establish the connection and discover the authorization-aware tool schema.
 `GET /health` and protected-resource metadata are also public. Every other MCP
