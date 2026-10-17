@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createMcpHandler, hostHeaderValidationResponse, originValidationResponse, type McpServerFactory } from "@modelcontextprotocol/server";
-import { canonicalOAuthIssuer, type FeedsTokenVerifier, type VerifiedFeedsPrincipal } from "./auth.js";
+import type { FeedsTokenVerifier, VerifiedFeedsPrincipal } from "./auth.js";
 import { hostedOAuthScopes } from "./createServer.js";
 
 export interface FeedsMcpHttpOptions {
@@ -164,7 +164,7 @@ function protectedResourceMetadataUrl(resource: string): string {
 }
 
 function validPrincipal(value: VerifiedFeedsPrincipal, issuer: string): boolean {
-  return value.issuer === canonicalOAuthIssuer(issuer)
+  return value.issuer === new URL(issuer).href
     && typeof value.subject === "string" && value.subject.length > 0
     && Array.isArray(value.scopes) && value.scopes.every((scope) => typeof scope === "string" && scope.length > 0)
     && typeof value.expiresAt === "number" && Number.isFinite(value.expiresAt) && value.expiresAt > Date.now() / 1_000;

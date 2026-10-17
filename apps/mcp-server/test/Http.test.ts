@@ -15,7 +15,7 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
     async verify(token: string) {
       if (["revoked", "unavailable"].includes(token)) throw new Error("not active");
       return {
-        issuer: token === "wrong-issuer" ? "https://other.example" : "https://auth.example",
+        issuer: token === "wrong-issuer" ? "https://other.example/" : "https://auth.example/",
         subject: token === "expired" ? "account-expired" : "account-a",
         scopes: token === "insufficient" ? ["other:read"] : ["feeds:read"],
         expiresAt: token === "expired" ? Math.floor(Date.now() / 1_000) - 1 : Math.floor(Date.now() / 1_000) + 60,
@@ -29,7 +29,7 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
     return createFeedsMcpServer({ feeds });
   }, {
     host: "127.0.0.1", port: 0, allowedHosts: ["127.0.0.1", "feeds.example"], allowedOrigins: ["trusted.example"],
-    authentication: { resource: "https://feeds.example/mcp", issuer: "https://auth.example", verifier },
+    authentication: { resource: "https://feeds.example/mcp", issuer: "https://auth.example/", verifier },
   });
   server.listen(0, "127.0.0.1"); await once(server, "listening");
   const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -54,7 +54,7 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
     assert.equal(providerCalls, 0);
 
     const metadata = await fetch(`${origin}/.well-known/oauth-protected-resource/mcp`);
-    assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example"], scopes_supported: ["openid", "offline_access", "feeds:read"] });
+    assert.deepEqual(await metadata.json(), { resource: "https://feeds.example/mcp", authorization_servers: ["https://auth.example/"], scopes_supported: ["openid", "offline_access", "feeds:read"] });
     const schemas = await fetch(`${origin}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }) });
     assert.equal(schemas.status, 200);
     assert.match(await schemas.text(), /"securitySchemes":\[\{"type":"oauth2","scopes":\["openid","offline_access","feeds:read"\]\}\]/u);
@@ -71,7 +71,7 @@ test("protects hosted feed calls before runtime or FxEmbed access", async () => 
 
     const accepted = await fetch(`${origin}/mcp`, { method: "POST", headers: { authorization: "Bearer accepted", "content-type": "application/json", accept: "application/json, text/event-stream" }, body: call });
     assert.equal(accepted.status, 200);
-    assert.deepEqual(seenPrincipal, { issuer: "https://auth.example", subject: "account-a", scopes: ["feeds:read"], expiresAt: (seenPrincipal as { expiresAt: number }).expiresAt });
+    assert.deepEqual(seenPrincipal, { issuer: "https://auth.example/", subject: "account-a", scopes: ["feeds:read"], expiresAt: (seenPrincipal as { expiresAt: number }).expiresAt });
     assert.equal(providerCalls, 1);
   } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });

@@ -21,13 +21,6 @@ export interface IntrospectionVerifierOptions {
   readonly timeoutMs?: number;
 }
 
-/** OAuth issuer identifiers are compared as exact strings by MCP clients. */
-export function canonicalOAuthIssuer(value: string): string {
-  const issuer = new URL(value);
-  if (issuer.protocol !== "https:" || issuer.search || issuer.hash || issuer.username || issuer.password) throw new Error("OAuth issuer must be a canonical HTTPS URL.");
-  return issuer.pathname === "/" ? issuer.origin : issuer.href;
-}
-
 /** Verifies only opaque access tokens issued by the selected OAuth adapter. */
 export class IntrospectionVerifier implements FeedsTokenVerifier {
   readonly #endpoint: URL;
@@ -40,7 +33,7 @@ export class IntrospectionVerifier implements FeedsTokenVerifier {
   constructor(options: IntrospectionVerifierOptions) {
     this.#endpoint = new URL(options.endpoint);
     this.#credentials = Buffer.from(`${options.clientId}:${options.clientSecret}`).toString("base64");
-    this.#issuer = canonicalOAuthIssuer(options.issuer);
+    this.#issuer = new URL(options.issuer).href;
     this.#resource = new URL(options.resource).href;
     this.#fetch = options.fetch ?? fetch;
     this.#timeoutMs = options.timeoutMs ?? 5_000;
