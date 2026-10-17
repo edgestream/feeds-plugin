@@ -1,5 +1,5 @@
 import { createFeed, createHostedFxEmbedState, HostedFxEmbedPolicy, type HostedFeedsLimits } from "@edgestream/feeds-runtime";
-import { canonicalOAuthIssuer, IntrospectionVerifier, type VerifiedFeedsPrincipal } from "./auth.js";
+import { IntrospectionVerifier, type VerifiedFeedsPrincipal } from "./auth.js";
 import { createFeedsMcpServer } from "./createServer.js";
 import { createFeedsMcpHttpServer } from "./web.js";
 
@@ -66,7 +66,7 @@ function hostedAuthentication(env: NodeJS.ProcessEnv): { resource: string; issue
   const endpoint = required(env, "FEEDS_MCP_INTROSPECTION_URL");
   const clientId = required(env, "FEEDS_MCP_INTROSPECTION_CLIENT_ID");
   const clientSecret = required(env, "FEEDS_MCP_INTROSPECTION_CLIENT_SECRET");
-  return { resource, issuer: canonicalOAuthIssuer(issuer), verifier: new IntrospectionVerifier({ endpoint, clientId, clientSecret, issuer, resource }) };
+  return { resource, issuer: new URL(issuer).href, verifier: new IntrospectionVerifier({ endpoint, clientId, clientSecret, issuer, resource }) };
 }
 function required(env: NodeJS.ProcessEnv, name: string): string {
   const value = env[name];

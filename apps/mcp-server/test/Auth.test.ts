@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { IntrospectionVerifier } from "../src/index.js";
 
-const issuer = "https://feeds-auth.example";
+const issuer = "https://feeds-auth.example/";
 const resource = "https://feeds.example/mcp";
 
 function verifier(body: unknown, status = 200): IntrospectionVerifier {
