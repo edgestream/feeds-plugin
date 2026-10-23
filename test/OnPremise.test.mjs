@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile, readFile, readlink, mkdir, access, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile, readlink, mkdir, access, rm, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { lifecycle } from '../scripts/on-premise.mjs';
@@ -24,6 +24,13 @@ test('pinned lifecycle stages, repeats, rejects drift, upgrades, rolls back and 
     await assert.rejects(lifecycle('activate', 'first', options));
     await mkdir(`${root}/etc/feeds-tunnel`);
     for (const name of ['tunnel.yaml', 'api-key']) await writeFile(`${root}/etc/feeds-tunnel/${name}`, 'external', { mode: 0o600 });
+    await chmod(`${root}/etc/feeds-tunnel/api-key`, 0o644);
+    await assert.rejects(lifecycle('activate', 'first', options), /private files/);
+    await chmod(`${root}/etc/feeds-tunnel/api-key`, 0o600);
+    await assert.rejects(lifecycle('activate', 'first', { root, run: async args => {
+      if (args[0] === 'restart') throw new Error('first activation failed');
+    } }), /previous selection restored/);
+    await assert.rejects(readlink(`${root}/opt/feeds-tunnel/current`));
     await lifecycle('activate', 'first', options);
     assert.equal(await readlink(`${root}/opt/feeds-tunnel/current`), 'releases/first');
     await writeFile(`${root}/opt/feeds-tunnel/releases/first/node`, 'tampered');

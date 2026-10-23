@@ -118,7 +118,15 @@ Offline lifecycle tests exercise staging, repeat installs, checksum rejection,
 release ID conflicts, activation, failed activation recovery, upgrade, rollback,
 and removal with external credential retention. Existing HTTP/OAuth tests cover
 the anonymous protocol and remote binding protection. CLI flags and configuration
-were inspected using the actual upstream 0.0.17 Linux amd64 binary.
+were inspected using the actual upstream 0.0.17 Linux amd64 binary. Unit syntax
+passes `systemd-analyze verify` in an isolated filesystem with placeholder
+executables; this does not prove runtime service behavior.
+
+On 2026-10-23, a direct loopback smoke on Node 24.22.0 with Feeds commit
+`6622b16aa84802ba979fa2025a1c6d3664cefbe4` passed anonymous initialization and
+tool discovery. One Bluesky profile request returned structured content; one X
+profile request returned `isError: true` and did not pass. These were bounded
+direct calls, not tunnel or workspace acceptance.
 
 **Unverified:** a clean Ubuntu installation, actual systemd boot/process recovery,
 network recovery, invalid-key readiness behavior, tunnel-forwarded Host/Origin,
