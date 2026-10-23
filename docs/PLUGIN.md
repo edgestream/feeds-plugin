@@ -48,6 +48,11 @@ Marketplace installation, discovery, and updates are documented in
 [`edgestream/agent-marketplace`](https://github.com/edgestream/agent-marketplace#installation).
 This repository owns the installable package; it does not deploy a remote server.
 
+For a separate private workspace connection through Secure MCP Tunnel, see the
+[on-premises operator guide](ON_PREMISE.md). Workspace availability and member
+installation are separate checks; the existing Web app reference does not select
+a newly created tunnel connection.
+
 ## ChatGPT Web packaging
 
 `web/` is a separate, MCP-free native plugin package based on the existing
