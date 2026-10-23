@@ -1,0 +1,24 @@
+[Unit]
+Description=Private loopback Feeds MCP
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+DynamicUser=yes
+ExecStart=/opt/feeds-tunnel/current/node /opt/feeds-tunnel/current/feeds-mcp-http.mjs
+Environment=FEEDS_MCP_HTTP_HOST=127.0.0.1 FEEDS_MCP_HTTP_PORT=3000
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

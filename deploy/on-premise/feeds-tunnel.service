@@ -1,0 +1,28 @@
+[Unit]
+Description=Secure MCP Tunnel for private Feeds
+Wants=network-online.target feeds-private.service
+After=network-online.target feeds-private.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+DynamicUser=yes
+LoadCredential=api-key:/etc/feeds-tunnel/api-key
+LoadCredential=tunnel.yaml:/etc/feeds-tunnel/tunnel.yaml
+ExecStart=/opt/feeds-tunnel/current/tunnel-client run --config %d/tunnel.yaml --control-plane.api-key file:%d/api-key --mcp.server-url http://127.0.0.1:3000/mcp --health.listen-addr 127.0.0.1:8080 --allow-remote-ui=false
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+UMask=0077
+# Health endpoints diagnose readiness. Never retain tunnel payloads or secrets.
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

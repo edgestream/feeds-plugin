@@ -1,0 +1,9 @@
+config_version: 1
+control_plane:
+  base_url: "https://api.openai.com"
+  tunnel_id: "REPLACE_WITH_OPERATOR_TUNNEL_ID"
+admin_ui:
+  open_browser: false
+log:
+  level: error
+  format: json
