@@ -11,6 +11,11 @@ MCP, or run it from the command line.
 See the [marketplace installation guide](https://github.com/edgestream/agent-marketplace#installation)
 for installation, channel selection, and updates.
 
+## On-premises workgroup access
+
+For a private deployment through Secure MCP Tunnel without individual Feeds
+login, follow the [operator guide](docs/ON_PREMISE.md).
+
 ## CLI
 
 The CLI requires *Node.js 24* or later. From the repository root of a local

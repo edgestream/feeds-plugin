@@ -135,6 +135,13 @@ release concurrent reservations on completion, cancellation, and failure.
 Rejected admission performs no upstream call. Successful JSON is read in full
 and returned unchanged: Feeds has no response-size limit or truncation policy.
 
+## Private tunnel deployment
+
+For loopback-only anonymous HTTP behind Secure MCP Tunnel, follow the
+[on-premises operator guide](ON_PREMISE.md). It covers pinned service installation,
+workspace access and acceptance. This mode preserves the non-loopback OAuth guards
+and does not change the hosted authentication contract below.
+
 ## Hosted authentication
 
 Setting `FEEDS_MCP_OAUTH_RESOURCE` makes the HTTP MCP endpoint protected. It
