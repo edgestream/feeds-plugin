@@ -9,7 +9,7 @@ Type=simple
 DynamicUser=yes
 LoadCredential=api-key:/etc/feeds-tunnel/api-key
 LoadCredential=tunnel.yaml:/etc/feeds-tunnel/tunnel.yaml
-ExecStart=/opt/feeds-tunnel/current/tunnel-client run --config %d/tunnel.yaml --control-plane.api-key file:%d/api-key --mcp.server-url http://127.0.0.1:3000/mcp --health.listen-addr 127.0.0.1:8080 --allow-remote-ui=false
+ExecStart=/opt/feeds-tunnel/current/tunnel-client run --config %d/tunnel.yaml --control-plane.api-key file:%d/api-key --mcp.server-url http://127.0.0.1:3000/mcp --mcp.startup-wait-timeout 30s --health.listen-addr 127.0.0.1:8080 --allow-remote-ui=false
 Restart=always
 RestartSec=5
 TimeoutStopSec=15

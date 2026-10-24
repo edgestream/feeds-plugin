@@ -66,7 +66,9 @@ and installs two units without starting them. Repeating an identical release is
 safe; reuse of an ID with different hashes fails before changing services.
 Activation selects `current`, enables both services for boot, and restarts them.
 A synchronous restart failure restores the previous selection (or stops the first
-installation). Activation success means systemd accepted the restart, not tunnel
+installation). The tunnel client waits up to 30 seconds for the local MCP listener before its
+initial probe, because systemd ordering alone does not guarantee HTTP readiness.
+Activation success means systemd accepted the restart, not tunnel
 readiness: run `status` until ready before acceptance. An asynchronous failure or
 failed readiness requires explicit rollback. Run one lifecycle command at a time;
 installation/activation is not a multi-operator transaction. No script creates,
